@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>fanaticism</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1
+id="abandon-aiding-people-in-a-technical-sense-or-accept-fanaticism-in-a-technical-sense">Abandon
+aiding people (in a technical sense) or accept fanaticism (in a
+technical sense)! :)</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This post is about fanaticism in the technical sense, meaning taking
+arbitrarily risky moral bets if the payoff is large enough, as defined
+in Hayden Wilkinson’s <a href="./doc/fanaticism.pdf">In defence of
+fanaticism</a>. In this post, I will be following up on the discussion
+in Wilkinson’s paper by giving another argument in favor of fanaticism.
+The argument applies conditional on being an expected utility maximizer.
+In brief, the argument is that if one rejects fanaticism, then there is
+a pair of <a href="./doc/lottery.pdf">lotteries</a> such that one
+considers lottery <span class="math inline">\(A\)</span> to be worse
+than a universe where a huge number of people live lives of horrible
+torment, lottery <span class="math inline">\(B\)</span> to be better
+than a universe where a huge number of people live great lives, but such
+that every person involved is better off in lottery <span
+class="math inline">\(A\)</span> than in lottery <span
+class="math inline">\(B\)</span>. This doesn’t jibe with ethics being
+about helping people!</p>
+<h2 id="assumptions">Assumptions</h2>
+<p>I will assume throughout that one is an expected utility
+maximizer.<sup id="a1"><a href="#f1">1</a></sup> By shifting our utility
+function by a constant if needed, let’s say a universe devoid of
+anything morally relevant has utility <span
+class="math inline">\(0\)</span>. Conditional on being an expected
+utility maximizer, rejecting fanaticism is equivalent to one’s utility
+function being bounded.<sup id="a2"><a href="#f2">2</a></sup> Here are
+the assumptions.<sup id="a3"><a href="#f3">3</a></sup></p>
+<ol type="1">
+<li>(Strict monotonicity)<sup id="a4"><a href="#f4">4</a></sup> For
+every non-negative integer <span class="math inline">\(n\)</span>:
+<ol type="1">
+<li>A universe which has <span class="math inline">\(n+1\)</span> people
+living great lives is better than one where <span
+class="math inline">\(n\)</span> people are living (equally) great
+lives;</li>
+<li>A universe which has <span class="math inline">\(n+1\)</span> people
+living lives of horrible torment is worse than one where <span
+class="math inline">\(n\)</span> people are living lives of (equally)
+horrible torment.</li>
+</ol></li>
+<li>(Cryoneutrality) Adding a cryofrozen person floating in
+intergalactic space to the universe does not change the universe’s
+utility.<sup id="a5"><a href="#f5">5</a></sup></li>
+<li>(Non-fanaticism) There is a constant <span
+class="math inline">\(a\)</span> such that the absolute value of the
+utility of any universe is at most <span
+class="math inline">\(a\)</span>.</li>
+</ol>
+<h2 id="numerology">Numerology</h2>
+<p>Let <span class="math inline">\(u_g\)</span> be the utility of a
+universe with <span class="math inline">\(10^{20}\)</span> people living
+great lives. Let <span class="math inline">\(u_{g&#39;}\)</span> be the
+utility of a universe with another <span
+class="math inline">\(10^{20}\)</span> people living great lives added
+to the previous universe, for a total of <span
+class="math inline">\(n=2\cdot 10^{20}\)</span> happy people. Let <span
+class="math inline">\(\delta_1=u_{g&#39;}-u_g\)</span>.</p>
+<p>Let <span class="math inline">\(u_b\)</span> be the utility of a
+universe with these first <span class="math inline">\(10^{20}\)</span>
+people instead living lives of horrible torment, and let <span
+class="math inline">\(u_{b&#39;}\)</span> be the utility of a universe
+with the <span class="math inline">\(n=2\cdot 10^{20}\)</span> people
+from before living lives of horrible torment. Let <span
+class="math inline">\(\delta_2=u_{b}-u_{b&#39;}\)</span>.</p>
+<p>Let <span
+class="math inline">\(\delta=\min(\delta_1,\delta_2)\)</span>. It
+follows from the strict monotonicity assumption that <span
+class="math inline">\(\delta&gt;0\)</span>. Let <span
+class="math inline">\(m=\left\lceil\frac{8b}{\delta}\right\rceil\)</span>.</p>
+<h2 id="the-lotteries">The lotteries</h2>
+<p>Consider a universe with <span class="math inline">\(n\cdot
+m\)</span> cryofrozen people labeled <span
+class="math inline">\(1,2,\ldots,nm-1,nm\)</span>. Suppose that for each
+<span class="math inline">\(1\leq j\leq n\)</span>, the people <span
+class="math inline">\(j,n+j,2n+j,\ldots,(m-1)n+j\)</span> are all clones
+of each other. <sup id="a6"><a href="#f6">6</a></sup> In other words,
+there are <span class="math inline">\(m\)</span> identical batches of
+people, with each batch containing <span
+class="math inline">\(n\)</span> people. In fact, suppose that each
+batch consists of the <span class="math inline">\(n\)</span> people we
+considered in the previous section.</p>
+<p>You also have an urn with <span class="math inline">\(m\)</span>
+balls labeled <span class="math inline">\(1,\ldots,m,m+1,m+2\)</span>.
+You are forced to choose between the following two lotteries:</p>
+<p>lottery <span class="math inline">\(A\)</span>. Draw a ball uniformly
+at random from the urn. If it’s <span class="math inline">\(m+1\)</span>
+or <span class="math inline">\(m+2\)</span>, every cryofrozen person
+wakes up and lives a great life. If it’s <span
+class="math inline">\(i\leq m\)</span>, the people labeled <span
+class="math inline">\(n(i-1)+1,n(i-1)+2\ldots,ni\)</span> wake up and
+live lives of horrible torment.</p>
+<p>lottery <span class="math inline">\(B\)</span>. Draw a ball uniformly
+at random from the urn. If it’s <span class="math inline">\(m+1\)</span>
+or <span class="math inline">\(m+2\)</span>, every cryofrozen person
+wakes up and lives a life of horrible torment. If it’s <span
+class="math inline">\(i\neq 0\)</span>, the people labeled <span
+class="math inline">\(n(i-1)+1,n(i-1)+2\ldots,ni\)</span> wake up and
+live great lives.</p>
+<h2 id="analysis">Analysis</h2>
+<p>The outcomes where <span class="math inline">\(n\)</span> people are
+awake have utility either <span
+class="math inline">\(u_{g&#39;}\)</span> or <span
+class="math inline">\(u_{b&#39;}\)</span> by the cryoneutarlity
+assumption. Note that the expected utility of lottery <span
+class="math inline">\(A\)</span> is at most <span
+class="math inline">\(\frac{2}{m+2}b+\frac{m}{m+2}u_{b&#39;}=u_b-\frac{m\delta_2-2b+2u_b}{m+2}
+\leq u_b-\frac{8b-2b+(-2b)}{m+2} &lt; u_b\)</span>, where we used
+assumption 3 (non-fanaticism) to bound the first term. And similarly,
+the expected utility of lottery <span class="math inline">\(B\)</span>
+is strictly greater than <span class="math inline">\(u_g\)</span>. In
+other words, lottery A is worse than a universe where <span
+class="math inline">\(10^{20}\)</span> people live lives of horrible
+torment, and lottery <span class="math inline">\(B\)</span> is better
+than a universe where <span class="math inline">\(10^{20}\)</span>
+people live great lives.</p>
+<p>But as far as any individual person is concerned, lottery <span
+class="math inline">\(A\)</span> is just waking up and living a great
+life with probability <span class="math inline">\(\frac{2}{m+2}\)</span>
+and living a life of horrible torment with probability <span
+class="math inline">\(\frac{1}{m+2}\)</span>, whereas lottery <span
+class="math inline">\(B\)</span> is waking up and living a great life
+with probability <span class="math inline">\(\frac{1}{m+2}\)</span> and
+living a life of horrible torment with probability <span
+class="math inline">\(\frac{2}{m+2}\)</span>. From the point of view of
+each individual person, lottery <span class="math inline">\(A\)</span>
+is quite a bit better!</p>
+<h2 id="discussion">Discussion</h2>
+<p>The idea behind this argument is that if one rejects fanaticism, good
+stuff needs to matter less if it is packed tightly into some worlds than
+if it is spread out over many worlds. Conditional on being an expected
+utility maximizer, I claim the argument is at least similarly strong as
+any individual argument from Hayden Wilkinson’s <a
+href="./doc/fanaticism.pdf">In defence of fanaticism</a>. (I also think
+it’s most likely correct to be an expected utility maximizer, so I think
+the argument is similarly strong unconditionally as well, but that’s a
+more contentious claim that is maybe best kept split into two
+subquestions).</p>
+<p>possible modifications: One can fiddle with the numerology to make
+the odds for each individual person even more strikingly in favor of
+lottery <span class="math inline">\(A\)</span>. One can replace the
+strict monotonicity assumption with a non-strict one if one is content
+with a slightly weaker conclusion – see footnote 4.</p>
+<p>Here’s a possible response to this argument: “Okay, things suck if
+there are a trillion gazillion people involved, but maybe stuff could be
+fine as long as we aren’t affecting that many people?” My response to
+this is: “Interesting point. In fact, I happen to be hoping to talk
+about exactly this in <a href="./bounded.html">a future post</a>.”</p>
+<p>My personal position is still to reject fanaticism, with one of the
+main reasons being stuff like <a href="./doc/deblanc.pdf">Convergence of
+Expected Utility for Universal AI</a>, on which I hope to write more in
+<a href="./unbounded.html">another future post</a>.</p>
+<h2 id="acknowledgments">Acknowledgments</h2>
+<p>I would like to thank David Mathers, Kirke Joamets, Riley Harris,
+Sarthak Agrawal, and Tomáš Gavenčiak for helpful comments/discussions.
+In addition to Wilkinson’s <a href="./doc/fanaticism.pdf">In defence of
+fanaticism</a>, I think reading Joe Carlsmith’s <a
+href="./doc/carlsmith.pdf">On expected utility</a> also contributed to
+me thinking of this. I’m a <a
+href="./subsites/Prague%20Fall%20Season%202022.html">Prague Fall Season
+resident</a>. I’d like to thank the organizing team, as well as the
+other residents and visitors, for creating a nice environment!</p>
+<h2 id="footnotes">Footnotes</h2>
+<p><b id="f1">1</b> That said, I’m &gt;50% that one can give a similar
+argument without this assumption. <a href="#a1">↩︎</a></p>
+<p><b id="f2">2</b> There might be some subtlety here regarding whether
+fanaticism allows the utility function to be unbounded in one direction,
+but I think the better definition is that utility has to be bounded
+below and above. <a href="#a2">↩︎</a></p>
+<p><b id="f3">3</b> Whenever I say “a universe with blah” in the
+following, I mean a universe with blah and nothing else that’s morally
+relevant (or maybe with everything else you consider morally relevant
+held equal between all the universes we are considering). <a
+href="#a3">↩︎</a></p>
+<p><b id="f4">4</b> The argument goes through with almost no changes if
+one replaces this with the weaker claim that utility is monotonic and
+eventually increases/decreases as one adds happy/tortured people. Even
+more weakly, the argument also goes through if one just replaces this
+with non-strict monotonicity, with very minor changes. With this relaxed
+assumption, the conclusion one can get is “lottery <span
+class="math inline">\(A\)</span> is as bad as the lottery between a
+universe where a huge number of people live lives of great torment with
+probability <span class="math inline">\(1-10^{-100}\)</span> and an
+empty universe with probability <span
+class="math inline">\(10^{-100}\)</span>, lottery <span
+class="math inline">\(B\)</span> is as good as the lottery between a
+universe where a huge number of people live great lives with probability
+<span class="math inline">\(1-10^{-100}\)</span>, but every person
+involved is better off in lottery <span class="math inline">\(A\)</span>
+than in lottery <span class="math inline">\(B\)</span>”. The main reason
+I didn’t write it that way is that I think this would have made it more
+annoying to write and read without adding much substance. <a
+href="#a4">↩︎</a></p>
+<p><b id="f5">5</b> I’m lying slightly here: we end up using a slightly
+stronger assumption, namely that adding time spent as a cryofrozen human
+before someone’s waking life does not make the universe worse. <a
+href="#a5">↩︎</a></p>
+<p><b id="f6">6</b> If you’re unhappy with clones: I can see ways to
+present the argument without clones, but one might have to either
+include some other slightly annoying assumption, or be content with the
+clumsier conclusion from the previous footnote. <a href="#a6">↩︎</a></p>
+</body>
+</html>

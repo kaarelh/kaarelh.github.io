@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>gentle</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1
+id="a-gentle-primer-on-caring-including-in-strange-senses-with-applications">A
+gentle primer on caring, including in strange senses, with
+applications</h1>
+<h1 id="introduction">Introduction</h1>
+<p>Firstly, I will define a straightforward model of caring about other
+people. I think it is a good model for understanding (<a
+href="https://www.lesswrong.com/posts/ex63DPisEjomutkCw/msg-len">and</a>
+predicting) people’s actions. I also think it’s pretty meta-good to have
+one’s own ethics effectively be of approximately this form. However, I
+will not argue for either of these claims in this post.</p>
+<p>I will make a few observations about the relationship between Pareto
+improvements and social welfare in this model. I will then clarify the
+model in a crucial way, leading to a low-complexity way to think about
+caring across time. I will use this framework to make some observations
+on value drift, to give a justification of (some) sin taxes, and to
+state an insight into parenting.</p>
+<p>I see this post as mostly not having ground-breaking insights, but
+instead as thinking through basic things carefully. I think it’s
+surprising how much one can get out of such a simple model. I will
+mention a number of open directions for further thought along the way.
+It was my intention to keep the main text relatively modular and
+approachable<sup><a href="#fnw15azc0t52">[1]</a></sup>, with further
+discussion in the footnotes.</p>
+<h1 id="the-model">The model</h1>
+<p>Let <code>$I$</code> be the set<sup><a
+href="#fnotr8566uag">[2]</a></sup> of all moral patients.<sup><a
+href="#fnzo0p8u1gma">[3]</a></sup> For a moral patient
+<code>$i \in I$</code>, let <code>$x_i$</code> denote the <em>personal
+utility</em> of <code>$i$</code>. One might also call this the welfare
+of <code>$i$</code>, or how much fun it’s having, or the total amount of
+joy its experiences spark, or (the integral of) valence or pleasantness,
+or personal pleasure.<sup><a href="#fnnlu2c1o2hv">[4]</a><a
+href="#fnpvgx1cm14ai">[5]</a></sup></p>
+<p>The idea we would like to implement here is that <code>$i$</code> is
+not necessarily (just) trying to maximize <code>$x_i$</code> – it’s
+possible that <code>$i$</code> cares about (certain) other people, and
+not just instrumentally because of e.g. some contract, but
+terminally.<sup><a href="#fnbyxp6pcpj1r">[6]</a></sup> In particular, we
+will assume that the <em>terminal utility</em> of <code>$i$</code>,
+denoted<code>$u_i$</code>, takes the following linear form<sup><a
+href="#fnp51figh5wmg">[7]</a></sup>:</p>
+<p>\[u_i=\sum_{j\in I} w_{ij}x_j.\]</p>
+<p><code>$u_i$</code> is what agent <code>$i$</code> strives to
+maximize.<sup><a href="#fnjpm19ccbslr">[8]</a></sup> For simplicity, we
+will assume WLOG that for every <code>$i$</code>, we have
+<code>$w_{ii}=1$</code>.<sup><a href="#fn7i9j3ic2nn">[9]</a></sup> We
+will also assume all <code>$w_{ij}\geq 0$</code>.<sup><a
+href="#fn37tsnbto8zs">[10]</a></sup> If one likes, one can think of the
+weights <code>$w_{ij}$</code> as living in a matrix with rows and
+columns indexed by <code>$I$</code>. One can treat this as the adjacency
+matrix of a weighted directed graph.<sup><a
+href="#fnnjo7es0kttg">[11]</a></sup> The weights <code>$w_{ij}$</code>
+capture how much <code>$i$</code> cares about each element of
+<code>$I$</code>.<sup><a href="#fnct5ssnu6sxe">[12]</a></sup> For
+example:</p>
+<ol type="1">
+<li><code>$i$</code> being completely altruistic corresponds to having
+<code>$w_{ij}=1$</code> for all <code>$j\in J$</code>;</li>
+<li><code>$i$</code> being<code>$$</code> completely selfish corresponds
+to <code>$w_{ij}=0$</code> for all
+<code>$j\\in I\\setminus\{i\}$</code>;</li>
+<li>a mother who really cares about her immediate family and also cares
+just enough about people in general to sacrifice herself to save
+<code>$10^4$</code> random people might assign weight
+<code>$\frac{1}{2}$</code> to her partner, weight
+<code>$\frac{1}{2}$</code> to each of her children, and weight
+<code>$10^{-4}$</code> to every person not in her family.</li>
+</ol>
+<p>Or one might assign weights according to <a
+href="https://en.wikipedia.org/wiki/Coefficient_of_relationship">genetic
+relatedness</a>, or according to distance in some friendship graph, or
+according to physical distance, or according to mental similarity to
+oneself.<sup><a href="#fncmtbungjxa">[13]</a></sup></p>
+<h2 id="section"><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/21efc55098c75f652c5d947cdfcfbf5dd241b1e106657463.png" /></h2>
+<h2 id="the-inequivalence-of-society-level-and-individual-charity">The
+inequivalence of society-level and individual charity</h2>
+<p>To give a first taste of this model in action, I will use it to
+explain why supporting society-level charity is very far from implying
+that one needs to engage in individual charity<sup><a
+href="#fn3gd5642wytd">[14]</a><a href="#fnmzndkvntf0p">[15]</a></sup>,
+contra what seems to sometimes be (implicitly) claimed<sup><a
+href="#fnszgzmtakqvb">[16]</a></sup>. Assume an agent <code>$i$</code>
+is living in a country of <code>$10^7$</code> rich people, and that
+there are <code>$10^7$</code> poor people living outside the country.
+Conveniently for the ease of our analysis, it happens that
+<code>$i$</code> is a simple agent, assigning to each other agent
+<code>$j$</code> a constant weight <code>$w=w_{ij}$</code>. Now
+<code>$$``$i$</code> is considering the following three worlds:</p>
+<ol type="A">
+<li><p>A world in which <code>$i$</code> personally donates $100 to a
+poor person.</p></li>
+<li><p>A world in which the rich country passes a development aid law
+that takes $100 from each citizen and sends it to a poor
+person.</p></li>
+<li><p>A world in which no donations happen.</p></li>
+</ol>
+<p>Let’s assume that all <code>$10^7$</code> poor people are equally
+poor, that all <code>$10^7$</code> rich people are 100 times wealthier,
+and that personal utility is the <code>$\log$</code> of wealth.<sup><a
+href="#fn9jecte9s1ll">[17]</a></sup> Since the derivative of
+<code>$\log y$</code> is <code>$\frac{1}{y}$</code>,<sup><a
+href="#fnnzah3oi4zl">[18]</a></sup> in a linear approximation, the poor
+person gains <code>$100$</code> times the personal utility that the rich
+person loses from each such donation. The condition on <code>$w$</code>
+that is equivalent to <code>$i$</code> being selfish enough to prefer
+World C to World A is that <code>$w&lt; \frac{1}{100}$</code>. In words:
+<code>$i$</code> needs to be sort of selfish. But the condition
+corresponding to <code>$i$</code> preferring World C to World B is
+roughly<sup><a href="#fnpmtumhoqcip">[19]</a></sup>
+<code>$w&lt;10^{-9}$</code>. In words: <code>$i$</code> needs to be
+really really selfish. We see that there is a vast range, namely
+<code>$10^{-2}&lt;w\leq 10^{-9}$</code>, where <code>$i$</code> is
+selfish enough to prefer not to make a personal donation, but where
+<code>$i$</code> would nevertheless prefer a society-level donation
+(which <code>$i$</code> participates in) over no donation. I would guess
+that many a reasonable person inhabits this range.</p>
+<p>(All this said, I admit that the implication from public to private
+charity could be more compelling if one is more of a deontologist<sup><a
+href="#fn2ajg1n97vag">[20]</a></sup>, and in particular thinks that
+taxes are also justified solely as duties. And in practice, there are
+also other things, such as the deadweight loss from taxes or government
+inefficiency, to consider, which could move the needle toward private
+charity.)</p>
+<h2
+id="pareto-improvements-and-total-welfare-subsection-for-nerds">Pareto
+improvements and total welfare (subsection for nerds)</h2>
+<p>The agents in our setting might sometimes come across an
+option<code>$$</code><sup><a href="#fnts18kk360xk">[21]</a></sup> which
+every agent would prefer over another option, but which is nevertheless
+worse from the perspective of a social planner.</p>
+<p>To say the same thing formally, in world <code>$A$</code>, let the
+terminal utilities of agents be <code>$(u_{i,A})_{i\in I}$</code>, and
+in world <code>$B$</code>, let these be
+<code>$(u_{i,B})_{i\in I}$</code>. Suppose that for every agent
+<code>$i\in I$</code>, we have <code>$u_{i,A}\leq u_{i,B}$</code>, i.e.,
+every agent <code>$i\in I$</code> weakly (terminally) prefers world
+<code>$B$</code> to world <code>$A$</code>. We will assume that a social
+planner cares about <code>$u=\sum_{i\in I}x_i$</code>. It is then
+nevertheless possible that the social planner prefers world
+<code>$A$</code> to world <code>$B$</code>, i.e. that</p>
+<p>\[u_A=\sum_{i\in I} x_{i,A}&gt;\sum_{i\in I} x_{i,B}=u_B.\]</p>
+<p>For an example of this, suppose that two parents <code>$i,j$</code>
+are considering buying an expensive toy for their child
+<code>$k$</code>, splitting the cost evenly. The toy would contribute
+<code>$+10$</code> to the utility of <code>$k$</code>, but bearing half
+the cost would change the utility of each of <code>$i,j$</code> by
+<code>$-9$</code>.<sup><a href="#fnwfuwmyzfq0e">[22]</a></sup> Suppose
+that the parents do not care about each other, but both care about the
+child with <code>$w_{ik}=w_{jk}=1$</code>, and that the child is
+selfish. It is then the case that <code>$i,j,k$</code> each support
+buying the toy, but a social planner would not, because
+<code>$+10-9-9=-8$</code>. This strikes me as a situation that might
+occasionally happen in practice.</p>
+<p>However, various other nice properties are true in this model. I will
+quickly state these in terms of some undefined (but suggestive)
+terminology. I will leave making sense of and proving these as an
+exercise to the interested reader (commenter?).</p>
+<ol type="1">
+<li>If no <code>$i$</code> cares about some <code>$j$</code> more than
+about <code>$i$</code>-self, then any Pareto trade (between two agents)
+with no externalities is good.<sup><a
+href="#fnabry5qgidbq">[23]</a></sup></li>
+<li>More generally, at least two people have to personally lose from any
+contract that is [a Pareto improvement but bad].</li>
+<li>A corollary: the example we gave earlier is the simplest one.<sup><a
+href="#fna7iss8eekf">[24]</a></sup></li>
+<li>If <code>$w_{ij}=w_{ji}$</code> for all <code>$i,j$</code> and every
+agent has an equal amount of care to give to the other agents who are
+asked to consent to a contract<sup><a
+href="#fnn50o3xla7p">[25]</a></sup>, then if everyone consents to the
+contract, it is good.<sup><a href="#fnglxqnn0k1nf">[26]</a><a
+href="#fnv2806nsijz">[27]</a></sup></li>
+<li>If at least one person affected by a Pareto improvement is perfectly
+altruistic, then it is good.</li>
+<li>Any Pareto improvement for selfish agents is also a Pareto
+improvement for the same caring agents.</li>
+</ol>
+<p><code>$$</code>An interesting further direction is to investigate the
+impact of more care on total wellbeing. That is, suppose the agents
+start off inhabiting a default world (perhaps specified by current
+property rights and contracts). They come across various possible
+contracts, and they agree to a contract iff it is a Pareto improvement
+over the current default, after which the default switches to the world
+specified in this contract. Should we expect worlds where agents care
+more about other agents to end up better off in this process? Here are
+some observations:</p>
+<ol type="1">
+<li>In the extreme case where every agent is completely altruistic,
+everyone will indeed agree to precisely those contracts that are
+socially good.</li>
+<li>Conditional on all <code>$w_{ij}\leq w_{ii}$</code> throughout,
+considering only trades involving two agents, increasing a weight
+<code>$w_{ij}$</code> can only increase (in the sense of set inclusion)
+the set of possible trades which are Pareto improvements.<sup><a
+href="#fntqlbh3eg4u">[28]</a></sup> So since all such Pareto
+improvements are good, if every contract available only involves two
+agents, then increasing weights can only be good.</li>
+</ol>
+<p>However, it follows from our earlier example and from the fact that
+selfish agents only agree to socially good contracts that caring more
+would turn some socially bad contracts into Pareto improvements. This
+makes it difficult to unambiguously conclude that caring more is good
+from the perspective of a social planner. I think we would need to
+propose a distribution of possible contracts to proceed further with
+this line of inquiry. My guess is that given a reasonable distribution,
+more care will turn out to be better. I see figuring this out as an
+interesting open research direction.</p>
+<h3 id="instrumental-caring">Instrumental caring</h3>
+<p>A lot of what looks like caring in practice is instrumental caring,
+i.e. something like a set of agents signing a (possibly implicit)
+contract that commits each one to consenting to future contracts as if
+they cared about the other signatories. Alternatively, simply bundling
+many contracts (for instance, bundling a contract with the contract of
+one agent paying another agent) could look similar, although this might
+be computationally more difficult in certain domains in practice (in
+particular, we might need to think seriously about bargaining), and the
+outcomes could look quite different if there is uncertainty about the
+contracts one comes across in the future. I would expect gains from
+instrumental caring to largely substitute for the gains from terminal
+caring in domains where transaction costs are low (for instance, the
+important stuff being easily measurable could be helpful), between
+agents at similar power levels.</p>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/33c42e9bb4e04cedce1ed8dde0ab6449cd90451070a5c7dc.png" /></p>
+<p>To say a little more, what I mean here by two agents having similar
+power levels is that it would be possible for each to turn its own
+personal utility into the personal utility of the other at a rate close
+to <code>$1:1$</code>.<sup><a href="#fnxy4wqltqb7c">[29]</a><a
+href="#fnrgfs3tkf4sh">[30]</a></sup> The reason this is relevant is that
+for a set of agents where every pair has similar power levels<sup><a
+href="#fn8y8q7me2dc6">[31]</a></sup>, a contract which is socially good
+is a <a
+href="https://en.wikipedia.org/wiki/Kaldor%E2%80%93Hicks_efficiency">Kaldor-Hicks
+improvement</a>, which can be converted into a Pareto improvement by
+adding appropriate compensation requirements into the contract (and
+accepting the new contract leads to a state which is as good as if the
+initial contract was accepted (with the same total amount of utility
+being distributed differently)).<sup><a
+href="#fnhg0fkisay9h">[32]</a></sup> So, at least given that transaction
+costs are low, we would expect socially good contracts to be amended and
+accepted when the agents involved are similarly powerful.</p>
+<p>So, in conclusion, in domains where transaction costs are high or
+where the agents have very different power levels, I would expect the
+realized total utility to depend more on the degree to which different
+agents care about each other. One instance where transactions are very
+problematic (impossible?<sup><a href="#fnp1g3pd992oa">[33]</a></sup>) is
+when the agents inhabit different times.</p>
+<h2 id="slicing-people-up-across-time">Slicing people up across
+time</h2>
+<p>Instead of thinking of a person as a single agent inhabiting a long
+time interval, let’s partition a person into a number of agents, one for
+each short time interval. Namely, let’s choose a partition of time into
+short intervals (e.g. of length <code>$1$</code> second); let the set of
+starting times of these intervals be <code>$T$</code>. In the ~simplest
+case, there is a set of people <code>$J$</code>, independent of our
+decisions (i.e. the same in all possibilities we are considering), with
+the set of weights being also being independent of our decisions. In
+this case, the set of agents would be <code>$I=J\times T$</code>, so</p>
+<p>\[u_i=\sum_{j\in I} w_{ij}x_j=\sum_{k\in J}\sum_{t\in
+T}w_{i(k,t)}x_{(k,t)}.\]</p>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/5f198ae3d739a045798fceceec3b1d0face72e94afd64363.png" /></p>
+<p>In more generality, we might want to allow the set of agents in
+existence to be different for the different possible worlds under
+consideration, both because our decisions might lead to different people
+(in particular, a different number of people) being born, and also
+because our decisions might affect what certain already living people
+end up being like, on which we might want to have the weights depend
+(which is possible in our formalism iff we treat these different
+possible versions of a person as different agents). It might also be
+desirable to allow the weights to depend on indexical information –
+e.g. <code>$i$</code>-now might assign a high weight to the agent
+<code>$i$</code>-at-time-t loves<sup><a
+href="#fnke9pj87357">[34]</a></sup> – which we will handle by letting
+indexical information be part of the agent specification. In other
+words, if needed, we will for instance consider
+same-agent-except-not-loved-by-future-me and
+same-agent-except-loved-by-future-me to be different elements of
+<code>$I$</code>.</p>
+<h1 id="value-drift">Value drift</h1>
+<p>This section is in titles and footnotes, because I started to run out
+of steam. Feel free to skip it – nothing in the later sections depends
+on it.</p>
+<h2 id="avoid-weight-change-avoid-becoming-a-kantian">Avoid weight
+change, avoid becoming a Kantian</h2>
+<ul>
+<li>Having one’s ethics change radically is not good from the
+perspective of maximizing whatever one previously thought ought to
+maximized, which is reason to prevent such a change.</li>
+</ul>
+<h2 id="but-its-okay-for-different-things-to-spark-joy">But it’s okay
+for different things to spark joy</h2>
+<ul>
+<li>One thinks of future selves as other people one cares about. One
+doesn’t care much whether someone one cares about likes playing League
+of Legends or Dota, just that they are having fun.</li>
+</ul>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/f611f9972b228c901c1a5a3b0b54bc7713ba47840cc1b511.png" /></p>
+<h2 id="higher-order-corrections-to-the-above">Higher-order corrections
+to the above</h2>
+<ul>
+<li>Maybe if one assigns weights according to mental similarity, then
+one actually does care about one’s future selves liking League of
+Legends instead of Dota.</li>
+<li>Maybe if one notices strong correlations between particular ethical
+views (including weight assignments) and personal interests, one is
+justified in keeping one’s personal interests.</li>
+<li>It seems quite reasonably to instead try to maximize whatever is
+“actually good” in some deeper sense, even if one is not a moral realist
+– one could e.g. subscribe to coherent extrapolated volition as an
+antirealist, and be open to changing weights as one’s CEV-approximation
+computation has had longer to run (i.e. one has had more time to think
+about ethics).</li>
+<li>Some instances of what might look like changing weights are actually
+indexical dependence of weights.</li>
+</ul>
+<h1 id="some-slightly-strange-externalities">Some slightly strange
+externalities</h1>
+<p>We will now examine some cases where an action has externalities on
+other agents that the agent cares about. Externalities often cause some
+socially suboptimal contracts to go through (or some socially optimal
+contracts to fail to go through), especially in cases where transaction
+costs are high, including instances where some contracts are hard to
+enforce, or in cases where the agents involved have very different power
+levels.<sup><a href="#fnh75h74o2lta">[35]</a></sup></p>
+<p>All the cases of externalities which we will be looking at will be
+cases where a single agent can make a decision which affects multiple
+agents. If this agent is perfectly altruistic w.r.t. the set of agents
+that are affected, it will make a decision iff it deems it socially
+optimal. Things become more interesting if the agent is completely or
+partially selfish. For such agents, the state is often justified in
+taxing or subsidizing actions which have significant externalities.</p>
+<p>Let’s consider the question of externality pricing (i.e. figuring out
+how large the tax (or subsidy<sup><a
+href="#fno10wlnqlnn">[36]</a></sup>) on someone should be for doing
+something which has externalities on other agents, starting from the
+case where everyone is completely selfish. Suppose agent
+<code>$i$</code> is deciding whether to perform an action which has
+negative externalities on each agent in a set
+<code>$J\subseteq I$</code> who are practically unable to trade with
+<code>$i$</code>. Taxing <code>$i$</code> for performing this action at
+the sum of what agents in <code>$J$</code> would maximally want to pay
+to avoid the negative externalities on themselves ensures that
+<code>$i$</code> takes this action iff <code>$i$</code> would take this
+action if trading were possible (with zero transaction costs and perfect
+information about the willingnesses to pay of each agent). This seems
+like a reasonable proxy for the action being socially good.<sup><a
+href="#fn1qxak3woezk">[37]</a></sup> Or at least, this level of
+externality taxation is most likely better than none.</p>
+<p>[\BEGIN{REMARK FROM FINAL EDIT} I initially thought that handling
+externality pricing in terms of dollars is better than handling it in
+terms of utilities. The version in terms of utilities would be to price
+an externality so that the externality tax leads to a utility loss for
+<code>$i$</code> which is the sum of utility losses for all the other
+agents. Dealing with caring becomes straightforwardly just summing up
+these losses with weights given by <code>$1-w_{ij}$</code> to find the
+appropriate utility cost and picking the monetary cost to match that (if
+it’s not clear what I mean by this, it will be after reading a little
+bit ahead in the body of the post).</p>
+<p>One reason for doing externality pricing in terms of dollars is that
+this might be more tractable to figure out in practice. (The utility
+approach is getting close to “let’s try to figure out what the optimal
+thing for each person to do is, and pay them iff they do that”.) Another
+reason is that if the externality tax collected is actually paid out to
+the people suffering the externalities, then this is exactly the minimal
+price at which a trade with compensation is guaranteed to have positive
+utility. At this price, exactly those actions go through for which
+externalities can be compensated so that the whole contract has positive
+utility for everyone. Even so, it is possible that the people suffering
+the externalities would prefer a different price, assuming there has to
+be one price across versions of the same contract involving agents with
+different personal preferences, for the same reason that a monopoly
+would not price at the efficient market price. And e.g. in instances in
+which these people are many orders of magnitude poorer, such a monopoly
+price would likely lead to higher total utility than the efficient
+market price, at least if we look at contracts of this type in
+isolation.</p>
+<p>The utility version of externality pricing leads to the optimal level
+of production-without-a-wealth-transfer, which also seems like a
+reasonable proxy to aim for.</p>
+<p>I guess that a somewhat more accurate and more complicated way to
+think of this is the following. There is an action <code>$X$</code> we
+are considering taxing, which different agents get different personal
+utility from, but which always has the same negative externalities.
+Firstly, assume there is an optimal use of the additional tax dollars
+collected from a tax (possibly, reducing other taxes), with marginal
+rate <code>$r$</code> of turning tax dollars into utility, which we
+assume the government knows and implements. <code>$r$</code> would be
+good to know, and I guess that an adequate government would try to
+constantly have a good estimate of <code>$r$</code>. Second, assume that
+everyone who might do <code>$X$</code> has the same rate of turning
+marginal dollars into utility, let this be <code>$s$</code>. I would
+guess that it is also fine to instead let <code>$s$</code> be [the
+average of this marginal exchange rate across all the people doing
+<code>$X$</code>] – hopefully this is not too dependent on the tax rate
+in the cases we will consider. Given the total of utility losses from
+externalities per action – call it <code>$$``$t$</code> (and assume it
+is a constant independent of the number of actions), and given
+<code>$r$</code> and <code>$s$</code>, and given the empirical
+distribution for utilities gained from <code>$X$</code>, for a proposed
+externality price <code>$p$</code>, the effects of the tax are the
+following:</p>
+<ol type="1">
+<li>For each time action <code>$X$</code> is taken, there is a utility
+difference of <code>$p(r-s)$</code> coming from the transfer from the
+agent taking the action to the government money pool (and its subsequent
+use).</li>
+<li><code>$$</code>For each time action <code>$X$</code> is taken, there
+is some utility gain to the agent taking the action and utility loss
+<code>$t$</code> to the agents on whom the externalities fall.</li>
+</ol>
+<p>If we are really lucky and <code>$r=s$</code>, then all we have to
+care about is maximizing utility from 2, which is equivalent to a trade
+happening iff the utility gain to the agent is greater than the utility
+loss from externalities. And this happens exactly if we ensure that
+<code>$pr=t$</code>, so <code>$p=\frac{t}{r}$</code>.</p>
+<p>Unfortunately, it seems likely that <code>$r&gt;s$</code>, since
+otherwise the government could do at least as well as its optimal thing
+to spend money on by just giving marginal money to (people like) the
+agent, at least if we ignore the fact that some money would leak out of
+the loop into administrative costs (although maybe it is often the case
+that they should be doing this, with the optimal policy being lowering
+other taxes on the agent, which also has the benefit of decreasing
+administrative costs, hmm). I’m not sure if I have anything interesting
+to additionally say about the general case here. I would like to
+understand this better. Maybe one can assume that the distribution of
+personal utility gains to agents taking <code>$X$</code> is something
+simple, and then derive some interesting general result?</p>
+<p>Everything considered, especially given some of the messiness you
+will see discussed later, my guess is that the utility approach would
+have been better, but I won’t fix this now. I might rewrite this entire
+section if people seem interested.</p>
+<p>\END{REMARK FROM FINAL EDIT}]</p>
+<p>So far, we have covered the extreme cases where a decision-maker is
+completely altruistic or completely selfish, which is unfortunately 0%
+of all cases :). Motivated by these simple cases, I propose pricing
+externalities by figuring out how much each agent in
+<code>$j\in J$</code> is maximally willing to pay for the externality,
+multiplying this by <code>$1-w_{ij}$</code>, and summing these over
+<code>$J$</code>. It feels like there should be some decent
+justification of this, but I am currently failing to see one. This
+should definitely follow if one makes the simplification that utility is
+just equal to money (times a constant), which will be reasonable in
+certain regimes (in particular, this is similar to assuming that
+everyone involved has the same power level).</p>
+<p>Another half-assed justification for this pricing rule is that it is
+the unique method which satisfies the following three properties:</p>
+<ol type="1">
+<li>The externality tax is a function of the form
+<code>$\sum_{j\in J}f\_j(y\_j,w_{ij})$</code>, where <code>$y_j$</code>
+is the maximal amount <code>$j$</code> would be willing to pay for the
+externality on <code>$j$</code>-self. For instance, this is intuitively
+motivated if we want to ask each agent for what they would pay for the
+“externality unaccounted for by caring”, and summing the answers to find
+the total price to assign to the externality.</li>
+<li><code>$f(y\_j,0)=y\_j$</code> and <code>$f(y_j,1)=0$</code>. This is
+a strong version of the statement that we are extrapolating between the
+selfish and altruistic case. For instance, the second statement is
+saying that if <code>$i$</code> is completely altruistic toward
+<code>$j$</code>, then we should not assign any further price to the
+externality on <code>$j$</code>. Intuitively, the externality should
+already be internalized.</li>
+<li>Maximal simplicity assumption: the externality tax should be a
+linear function if we vary only <code>$w_{ij}$</code> (with any constant
+values for all the other weights).</li>
+</ol>
+<p>To be precise: this is the unique solution even if we fix a single
+contract and only allow weights to differ. If we instead aim to pick a
+pricing method across different contracts (but with the same functions
+<code>$f_j$</code> across contracts), then we should be able to replace
+the second assumption with the weaker assumption that we are
+extrapolating between the completely selfish and completely altruistic
+case.</p>
+<p>A poetic way to state our conclusion is that externalities should be
+priced according to the total effect on people (and parts of people)
+external to the agent’s web of caring.</p>
+<h2 id="having-kids-and-abortion">Having kids (and abortion)</h2>
+<p>In my observation, (social) libertarians who think bringing people
+into existence is valuable (both positions which I like) often tie
+themselves into knots over abortion. Here’s what seems to me to be the
+obvious way to think about abortion. One’s child’s worthwhile life is a
+positive externality (to the child)<sup><a
+href="#fnjb9tszmcsp">[38]</a></sup>, and the obvious policy w.r.t. any
+externality is to internalize it, i.e. in this case to have a <a
+href="https://en.wikipedia.org/wiki/Child_benefit">subsidy</a> for
+having children.</p>
+<p>There’s a number of important details to be figured out regarding the
+best payment scheme, e.g. a lump transfer upon birth, or monthly
+installments, or a lump transfer when the child earns a PhD, or % of the
+child’s salary,<sup><a href="#fnp0o5st9uvl">[39]</a></sup> which track a
+child living a worthwhile life to various extents and could get <a
+href="https://en.wikipedia.org/wiki/Goodhart%27s_law">Goodharted</a> to
+various extents, but I do not want to discuss this further here.
+Instead, I would like to assume that a parent has the option to press a
+button that creates a child and secures the child a life of known
+personal utility (possibly also with some effect to the parent’s
+personal utility, of size depending on the circumstances), and that
+there is no way for the parent and child to sign a contract that the
+child has to compensate the parent for this personal utility gain in the
+future. It seems clear that the amount the parent cares about their
+child matters a lot in getting the externality pricing right here, and I
+hope we have made some theoretical progress towards answering this
+question.</p>
+<p>A further messy issue is choosing the right way to compare money from
+different times. One option for this is to discount by average
+government bond interest rates. Another option is to turn money into
+utility on each side of the equation first, either at the rate for the
+given person or at society’s median rate at their time. I will not
+discuss this further now, but thinking this through and coming up with
+an estimate for the optimal subsidy size seems potentially practically
+important.</p>
+<h2 id="time-discounting">Time discounting</h2>
+<p>By time discounting one’s personal utility, I mean assigning future
+versions of oneself lower weights in our model.<sup><a
+href="#fngbt1ztx1obq">[40]</a></sup> I claim that most people time
+discount utility.<sup><a href="#fnc7xvfkjcu2">[41]</a></sup>This is just
+another way of saying that people are not fully altruistic towards
+future versions of themselves. Many activities, e.g. smoking, drinking
+alcohol, exercise, saving, studying, have obvious externalities on
+future versions of oneself. Many <a
+href="https://en.wikipedia.org/wiki/Sin_tax">sin taxes</a> can be argued
+for as being usual externality taxes, with externalities being on
+partially-uncared-for future selves.</p>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/f9f4fef1a39c8880108db702a88620084e5d9d37c07a604d.png" /></p>
+<h3
+id="democracy-is-less-myopic-than-its-constituent-individuals">Democracy
+is less myopic than its constituent individuals</h3>
+<p>I claim that democracy optimizes for utility with significantly less
+time discounting than individual people. But why would the “sum” of a
+bunch of short-sighted opinions be any less short-sighted? I recommend
+pausing here for a bit to see if you can figure why that would be the
+case.<sup><a href="#fncqmry6vuyz">[42]</a></sup></p>
+<p>Here is my explanation. My first subclaim is that most people would
+sacrifice themselves for at most like <code>$10^5$</code> other people.
+It follows from this that in a democracy with at least like
+<code>$10^6$</code> people, considerations about other people’s utility
+should dominate the voting decision of each person.<sup><a
+href="#fnmxnlt22bn3">[43]</a></sup> (This is assuming that democracy is
+just people voting on contracts, and that the costs or benefits of each
+contract are fairly evenly distributed across people. The conclusion
+will not apply e.g. if the law that people are voting on says that you
+and only you should stop smoking.)</p>
+<p>My second subclaim is that most people have a discount rate for other
+people which is significantly lower than their discount rate for
+themselves. One reason this might make sense is that to person
+<code>$p$</code>, the difference between <code>$p$</code>-now and
+<code>$p$</code>-20-years-from-now feels a lot bigger than the
+difference between random-guy-now-<code>$p$</code>-has-no-relation-to
+and random-guy-20-years-from-now-<code>$p$</code>-has-no-relation-to.
+This could be because the random walk <code>$p$</code> will be on for
+the next <code>$20$</code> years will take him reasonably far from who
+he is now (average societal drift plus aging plus driftless random
+walk), but the expected difference between the two random guys from
+different times is determined by societal drift only. If for instance
+one’s weights are based on mental similarity or on distance in some
+relatedness graph, then I think one can conclude from this observation
+that the sum of weights one assigns to all agents alive at a particular
+time decays slower in time than the weight one assigns to oneself. But
+it also just seems empirically accurate that people seem to discount
+more when deciding for themselves than when deciding for other
+people.</p>
+<p>Combining the two subclaims, we conclude that people make voting
+decisions with a significantly smaller effective discount rate than the
+one used for personal decisions.</p>
+<h2 id="parenting-as-setting-up-less-myopic-incentives">Parenting as
+setting up less myopic incentives</h2>
+<p>As a parent, caring about one’s child with a smaller time discount
+rate than the child has for themselves<sup><a
+href="#fnf4o56jkbi6i">[44]</a></sup> provides reason to set up an
+incentive structure for one’s child which internalizes the externalities
+on future versions of the child. For instance, if child+[20 years] would
+benefit from being better at math, then that’s a reason to reward
+child-now for learning math. One can sort of think of parents as
+merchants facilitating trades<sup><a
+href="#fndn5jur9e1kd">[45]</a></sup> between child+[20 years] and
+child-now.</p>
+<p>Optimal pricing of these externalities is easier to think about if we
+consider child-20-years-from-now to be a roughly fixed agent independent
+of our actions, i.e. with fixed preferences. But what if there are
+versions of child-20-years-from-now that end up being violinists who
+think it’s really great child-from-their-past learned how to play the
+violin, but there are also versions of child-20-years-from-now who did
+not learn to play the violin and do not think of not having done so as a
+big loss either? One can dissolve this by noting that what we care about
+is the expected value of our child’s future, i.e. expected value of the
+personal utility of the self that is realized, and we can sensibly
+reason about changes now that are likely to change this expected value
+(that said, we might want to assign different weights to different
+future versions based on e.g. mental similarity, or if we dislike
+wireheaders).</p>
+<p>A final observation: such rewards should generally decrease as the
+child’s time horizon broadens, because they start to discount less.</p>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/db91aae9b78928197b0c153570e152731322815d357f4820.png" /></p>
+<h2 id="double-counting-in-externality-internalization">Double counting
+in externality internalization</h2>
+<p>Here are two cases that stand interestingly in contrast to each
+other.</p>
+<p>In the first case, suppose the state pays children for being kind to
+their parents (with the money coming from the general tax pool,
+i.e. with no increase in taxes for parents whose children are nice),
+exactly internalizing the positive externality to the parents. Suppose
+further that a child still feels that being nice is just barely not
+worth it. Would a parent be interested in paying the child 1 dollar for
+being nice if that tips the scale? (Note that this would constitute
+overcompensating for the externality, leading to a deadweight loss.)</p>
+<p>In the second case, suppose a parent does no time discounting for
+their child, and the state has an incentive structure in place that
+rewards children for learning which appropriately captures the
+externality on future versions of themselves (again, with no
+discounting). Would a parent still be interested in setting up an
+additional incentive structure that rewards the child for learning?</p>
+<p>I claim that even though the situations look superficially similar,
+the answer to the first question is yes, whereas the answer to the
+second question is no. I will leave making sense of this as one final
+exercise to the reader.<sup><a href="#fn6atcyvbh8of">[46]</a></sup></p>
+<h1 id="further-directions">Further directions</h1>
+<p>In addition to the many directions for further thought mentioned in
+the text and in the footnotes, there is an obvious way of combining this
+with Internal Family Systems stuff. I don’t presently see a clear path
+to any interesting insights that only fall out of the conjunction of
+these two views, but I find it likely that there would be some.</p>
+<h1 id="accreditation">Accreditation</h1>
+<p>I would be surprised if there were more than a few individual points
+here that had not been noted before by someone else, but I don’t know
+who first made each point, and I decided not to spend a significant
+amount of time finding out. I will instead thank the intellectual
+culture (that arose out) of the Enlightenment, and Kirke and <a
+href="https://www.lesswrong.com/users/lrudl">Rudolf</a>, for helpful
+discussions. And I’ll thank DALL-E 2 and Picasso for the
+illustrations.</p>
+<p><img
+src="https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/b8c33a6743743e267ead5b53b90f2af29a31ec588e495fa7.png" /></p>
+<ol type="1">
+<li><p><sup><strong>[^](#fnrefw15azc0t52)</strong></sup></p>
+<p>And I think (and hope!) that this mostly worked out, except for some
+messiness in the section on externalities.</p></li>
+<li><p><sup><strong>[^](#fnrefotr8566uag)</strong></sup></p>
+<p>We will be assuming that <code>$I$</code> is countable, and in fact
+finite in cases where there would be concerns about convergence
+otherwise. When discussing future selves, it might be neater to allow
+<code>$I$</code> to be uncountable, and to modify the formalism so that
+<code>$u_i$</code> is a sum of integrals, but we will refrain from this
+to keep the presentation simpler.</p></li>
+<li><p><sup><strong>[^](#fnrefzo0p8u1gma)</strong></sup></p>
+<p>By “moral patient”, I just mean a being whose experiences have
+intrinsic moral value, which potentially includes any being with
+experiences. I will later assume that moral patients are all also
+agents, by which I mean something like things that make decisions; if
+this equivocation is a source of concern for you: I think everything in
+this post remains true if we treat moral patients that can’t make
+decisions as “agents” that just never get any chances to make
+decisions.</p></li>
+<li><p><sup><strong>[^](#fnrefnlu2c1o2hv)</strong></sup></p>
+<p>I think the rest of the post makes sense if one remains pretty
+agnostic about what “personal utility” means precisely, as long as one
+considers the basic idea to be workable, and in particular understands
+the distinction with the terminal utility of that person, and I don’t
+intend to discuss what <code>$x_i$</code> means at significant length in
+this post. But here is a discussion of insignificant length:</p>
+<p>I think of <code>$x_i$</code> as being the dumbest sensible thing
+that captures the idea of being linear in the number of equally
+pleasurable experiences (where I’m assuming that pleasurability already
+captures the effect of instrumental considerations like getting bored).
+If you like, the unit of <code>$x_i$</code> could be a marginal
+neg-dustspeck in the eye of the median person in
+annoyance-derived-from-dustspecks. The calibration of various
+experiences to a common metric within one agent can be estimated by
+offering it, or a computationally more powerful version of it, various
+tradeoffs between lotteries involving cases where it knows the only
+conscious whose experiences are affected is itself, or asking it to
+condition its answers on solipsism.<sup><a
+href="#fnp3oszdo2ti">[47]</a></sup> One unit of utility could maybe be
+calibrated between two agents by trying to estimate the tradeoff they
+would accept from behind a veil of ignorance; maybe by doing some crazy
+thing with Neuralink; maybe by coming up with some model for predicting
+the intensity of various experiences in various people, for instance by
+tracking people over time and asking them to consider tradeoffs between
+current and past versions of themselves; maybe by setting up some
+appropriate economic game; maybe by experimenting on twins; maybe by
+using just noticeable differences. Adjust for likely biases. Potentially
+do something somewhat wackier for wackier moral patients. Or perhaps we
+will be successful in constructing a neat theory of which computations
+or field configurations correspond to good experiences.</p>
+<p>I admit that I still haven’t quite defined this “personal utility”,
+at least not in the sense of reducing it to more basic concepts. At
+least for now, I’m fine with it being a theoretical concept that relates
+in various ways to other stuff. I guess this is also mostly what I think
+about “up quark”, “force”, “belief”, and so on. If this strikes you as
+appallingly anti-realist: consider replacing these last few sentences
+with a semantic externalist thing and proceeding.</p>
+<p>By the way, given that one has worked out the details of the above, I
+don’t think there is any additional coefficient that results need to be
+multiplied by to account for complexity/level of
+consciousness/intelligence of each agent. I think the above methodology
+would already take this into account correctly. The process would output
+that the value of a typical human experience is (at least) an order of
+magnitude larger in absolute value than the value of a typical bee
+experience. That said, figuring out this complexity-dependence might
+well be a crucial part of the above process.</p></li>
+<li><p><sup><strong>[^](#fnrefpvgx1cm14ai)</strong></sup></p>
+<p>You can think of <code>$x_i$</code> as a real number (which makes
+sense if we are implicitly operating with a single history of the world,
+or more narrowly a single history of experiences of <code>$i$</code>,
+from the beginning of time till the end of time, in mind), or as a
+function from the set of possible world-histories (or the set of
+possible experience-histories) to <code>$\mathbb{R}$</code>. I hope
+everything to come makes sense with either framing in mind.</p></li>
+<li><p><sup><strong>[^](#fnrefbyxp6pcpj1r)</strong></sup></p>
+<p>I am guessing that this distinction will be obvious to most readers
+here, but I think there is a reasonably possible confusion in this
+region of concept-space that leads one from something like [the
+metaethical position that all there is to ethics is acting according to
+one’s own preferences] to something like ethical egoism via an
+equivocation error involving personal utility and terminal utility.
+(That said, I do not wish to claim that there is no way to make a sound
+argument from one to the other.)</p></li>
+<li><p><sup><strong>[^](#fnrefp51figh5wmg)</strong></sup></p>
+<p>This is clearly related to <a
+href="http://darp.lse.ac.uk/papersDB/Harsanyi_(JPolE_55).pdf">Harsanyi’s
+Utilitarianism Theorem</a>. In fact, I see this theorem as providing
+strong justification for having a terminal utility function of this form
+– the philosophical setting here is somewhat different than the setting
+Harsanyi appears to have had in mind in the paper, but I think the
+assumptions of the theorem are quite compelling in our setting.</p>
+<p>To explain the difference in setting: it appears to me that Harsanyi
+was thinking of the terminal utilities (or rational preferences) of each
+agent as being given, and showing that some assumptions then constrain a
+social welfare function into having a certain form. By the way, I
+actually think his Postulate c is incorrect (or well, unappealing) in
+this philosophical context, with there being compelling counterexamples
+similar to the main example I provide in the subsection on Pareto
+improvements.</p>
+<p>Here is what I currently believe is an explicit counterexample to his
+Postulate c (but I recommend reading the rest of this section of my post
+first and then returning here): let the weight graph be the directed
+version of a big <a
+href="https://en.wikipedia.org/wiki/Star_(graph_theory)">star</a>, with
+everyone really caring about the guy in the middle, and the guy in the
+middle only sort of caring about each other agent; offer this set of
+agents the contract of <code>$+1$</code> personal utility to the middle
+guy and <code>$-1$</code> personal utility to everyone else; I will
+leave it to the interested reader to figure out weights in each
+direction so that everyone is indifferent about this contract; however,
+it seems clear to me that this contract is really bad from the
+perspective of a social planner.</p></li>
+<li><p><sup><strong>[^](#fnrefjpm19ccbslr)</strong></sup></p>
+<p>To be precise: randomness over world-histories makes
+<code>$u_i$</code> into a random variable, and <code>$i$</code> is of
+course maximizing the expectation of the random variable
+<code>$u_i$</code>. (I won’t specify the decision theory with much
+precision, because I don’t think anything in this post hinges on it, but
+if one is causally minded, one might want to only look at only the
+contribution of everything from the future here. Or, this becomes
+vacuous if one decides in the next section to assign weight 0 to all
+past agents.)</p></li>
+<li><p><sup><strong>[^](#fnref7i9j3ic2nn)</strong></sup></p>
+<p>Or well, there is a teeny-tiny loss of generality here: we have
+assumed that if <code>$i$</code>cares about something at all, then
+<code>$i$</code> cares about <code>$i$</code>-self at least a little
+bit, i.e. that <code>$w_{ii}&gt;0.$</code> Other than that,
+<code>$w_{ii}=1$</code> without loss of generality, because maximizing
+<code>$u_i$</code> is equivalent to maximizing
+<code>$v\_i=\frac{u\_i}{w_{ii}}.$</code> The weights don’t have any
+“physical meaning”, but ratios of weights do have a “physical meaning”.
+For instance, <code>$\frac{w_{ij}}{w_{ii}}=\frac{1}{2}$</code> iff
+<code>$i$</code> is indifferent between getting <code>$1$</code> unit of
+personal pleasure <code>$i$</code>-self and <code>$j$</code> getting
+<code>$2$</code> units of personal pleasure.</p></li>
+<li><p><sup><strong>[^](#fnref37tsnbto8zs)</strong></sup></p></li>
+</ol>
+<pre><code>This in no way rules out that there could be instrumental reasons to decrease someone&#39;s personal utility. But regarding terminal values, I doubt there is anyone who has a negative coefficient on someone else&#39;s utility that survives some contemplation (well, I don&#39;t currently see a plausible path to this), except maybe for people who are too computationally bounded to operate with a distinction between instrumental and terminal values?</code></pre>
+<ol start="11" type="1">
+<li><sup><strong>[^](#fnrefnjo7es0kttg)</strong></sup></li>
+</ol>
+<pre><code>It would be very cool if one could draw connections between stuff from \[graph theory\]/\[network analysis\] and ethically/economically interesting properties of this graph. Will an upper bound on the second eigenvalue of the adjacency matrix together with a lower bound on trust in a society guarantee that rich people use public transport? I will mention another particular question of this kind in a later footnote.</code></pre>
+<ol start="12" type="1">
+<li><sup><strong>[^](#fnrefct5ssnu6sxe)</strong></sup></li>
+</ol>
+<pre><code>It&#39;s important to understand that the weights capture per-experience care, not total care. For instance, with `$i$` being a grandfather and `$j$` being his grandchild, it&#39;s perfectly possible that simultaneously `$w_{ij}&lt;1$` and it maximizes `$u_i$` if the grandfather sacrifices his life to save his grandchild&#39;s.</code></pre>
+<ol start="13" type="1">
+<li><sup><strong>[^](#fnrefcmtbungjxa)</strong></sup></li>
+</ol>
+<pre><code>Out of these options, the ones that I think have the smallest expected distance to personal coherent extrapolated volition (or what would be suggested by [an ideal advisor](http://intelligence.org/files/IdealAdvisorTheories.pdf), or the views held in reflective equilibrium, where the equilibrium might be reached by doing [Bayesian ethics](https://rucore.libraries.rutgers.edu/rutgers-lib/40469/PDF/1/play/); or [some other kind of indirect normativity](https://ordinaryideas.wordpress.com/2012/04/21/indirect-normativity-write-up/)), where the expectation is taken both over my uncertainty and over picking a uniformly random person, are being completely altruistic and assigning weights according to mental similarity.
+
+For the above claim to fully make sense, one needs to specify the personal utilities, since otherwise the model&#39;s prescriptions are not fully specified, which makes it unclear how we should be calculating its distance to CEV – by distance, what I had in mind was something like the number of disagreements on some representative set of decision problems, or a sum of all the badnesses of the verdicts (where badness is measured by the difference of the CEV-utility of the best option versus the option chosen by the proposed model), or the `$L^2$` norm of the difference of the CEV-utility and the `$L^2$`-distance-minimizing affine transformation of the model-utility (this assumes a measure on the space of all worlds), or how much worse the world would be (in terms of CEV-utility) if one perfectly followed the advice of model-utility instead of CEV-utility in one&#39;s decisions.
+
+I endorse the claim with the personal utilities in this model being what I proposed in a previous footnote. I also endorse it with the personal utilities being &quot;chosen by CEV&quot;, meaning the ones that minimize distance from CEV for given weights. I would also probably endorse this claim with most other reasonable things as these personal utilities. </code></pre>
+<ol start="14" type="1">
+<li><sup><strong>[^](#fnref3gd5642wytd)</strong></sup></li>
+</ol>
+<pre><code>Or well, I only want to say this conditional on the settings of weights considered in a bit being &quot;metaethically tenable&quot;, I think. I do not necessarily wish to claim that they are tenable.</code></pre>
+<ol start="15" type="1">
+<li><sup><strong>[^](#fnrefmzndkvntf0p)</strong></sup></li>
+</ol>
+<pre><code>That said, I think both are good!</code></pre>
+<ol start="16" type="1">
+<li><sup><strong>[^](#fnrefszgzmtakqvb)</strong></sup></li>
+</ol>
+<pre><code>I do not claim that this is commonly claimed by rationalists/EAs, but I think it is often (implicitly) claimed by characters appearing in my media diet (e.g. [here](https://twitter.com/michelletandler/status/1508236751361519616) or [here](https://www.youtube.com/watch?v=65uuGA2xGwg&amp;t=188s)).</code></pre>
+<ol start="17" type="1">
+<li><sup><strong>[^](#fnref9jecte9s1ll)</strong></sup></li>
+</ol>
+<pre><code>These assumptions are actually unnecessary, in the sense that the result of this section is robust to making much weaker assumptions here. The assumptions are mostly here to facilitate the presentation.</code></pre>
+<ol start="18" type="1">
+<li><sup><strong>[^](#fnrefnzah3oi4zl)</strong></sup></li>
+</ol>
+<pre><code>I&#39;m using the convention `$\log y:=\log_e y$` here. It&#39;s the most common convention in math, and I&#39;d like to spread it. :)</code></pre>
+<ol start="19" type="1">
+<li><sup><strong>[^](#fnrefpmtumhoqcip)</strong></sup></li>
+</ol>
+<pre><code>The condition is that `$10^7\\cdot w\cdot 100-(10^7-1)\cdot w-1&lt;0$`, or equivalently `$w&lt;\frac{1}{10^9-10^7+1}\approx 10^{-9}$`.</code></pre>
+<ol start="20" type="1">
+<li><sup><strong>[^](#fnref2ajg1n97vag)</strong></sup></li>
+</ol>
+<pre><code>Actually, there is a way to justify a kind of deontological principle as a heuristic for utility maximization, at least for a completely altruistic agent. For concreteness, consider the question of whether to recycle (or whether to be vegan for environmental reasons (the same approach also works for animal welfare, although in this case the negative effect is less diffuse and easier to grasp directly), or whether to engage in some high-`$\text{CO}_2$`-emission-activity, or possibly whether to lie, etc.). It seems like the positive effect from recycling to each other agent is tiny, so maybe it can be safely ignored, so recycling has negative utility?^[\[48\]](#fnx1vfqvx8tjn)^ I think this argument is roughly as bad as saying that the number of people affected is huge, so the positive effect must be infinite. A tiny number times a large number is sometimes a reasonably-sized number – even at the extremes, size can matter.
+
+A better first-order way to think of this is the following. Try to imagine a world in which everyone recycles, and one in which no one does. Recycle iff you&#39;d prefer the former to the latter. This is a lot like the categorical imperative. What justifies this equivalence? Consider the process of going from a world where no one recycles to a world where everyone does, switching people from non-recycler to recycler one by one. We will make a linearity assumption, saying that each step along the way changes total welfare by the same amount. It follows that one person becoming a recycler changes total welfare by a positive amount iff a world in which everyone recycles has higher total welfare than a world in which no one does. So if one is completely altruistic (i.e. maximizes total welfare), then one should become a recycler iff one prefers a world where everyone is a recycler.
+
+I think the main benefit of this is that it makes the tradeoff easier to imagine, at least in some cases. Here are three final remarks on this:
+
+1) If our agent is not completely altruistic, then one can still understand diffuse effects in this way, except one needs to add a multiplier on one side of the equation. E.g. if one assigns a weight of `$1/10$` to everyone else, then one should compare the current world to a world in which everyone recycles, but with the diffuse benefits from recycling being only `$1/10$` of what they actually are.
+
+2) We might deviate from linearity, but we can often understand this deviation. E.g. early vegans probably have a superlinear impact because of promoting veganism.
+
+3) See [this](https://twitter.com/wtgowers/status/1564496390516097024?s=20&amp;t=PXwk-V_mmMrA_-jpNg1l-Q) for discussion of an alternative similar principle.</code></pre>
+<ol start="21" type="1">
+<li><sup><strong>[^](#fnrefts18kk360xk)</strong></sup></li>
+</ol>
+<pre><code>We think of decisions here as choosing between two fully specified worlds. One can also allow choices between lotteries more generally, in which case we just think of the options considered here as trivial lotteries.</code></pre>
+<ol start="22" type="1">
+<li><sup><strong>[^](#fnrefwfuwmyzfq0e)</strong></sup></li>
+</ol>
+<pre><code>Let us assume that the price of the toy minus the production costs is small, in the sense that the total contribution from the parents buying the toy to the wellbeing of the employees and shareholders of the toy company is at least an order of magnitude less than the contribution of the utility changes we mentioned earlier. (And assume similarly for any externalities.)</code></pre>
+<ol start="23" type="1">
+<li><sup><strong>[^](#fnrefabry5qgidbq)</strong></sup></li>
+</ol>
+<pre><code>That said, it&#39;s possible that a trade has no externality on anyone else&#39;s personal utility, but a third person would nevertheless want to subsidize a particular trade, that this would make the trade go through, and that this contract would be bad.</code></pre>
+<ol start="24" type="1">
+<li><sup><strong>[^](#fnrefa7iss8eekf)</strong></sup></li>
+</ol>
+<pre><code>Actually, there is a similar example where caring is always mutual, which one might consider simpler: let the utility differences be respectively `$-5,-5,+9$`, and let the nonzero cross-weights be `$w_{ik}=w_{ki}=0.8$` and `$w_{jk}=w_{kj}=0.8$`.</code></pre>
+<ol start="25" type="1">
+<li><sup><strong>[^](#fnrefn50o3xla7p)</strong></sup></li>
+</ol>
+<pre><code>Okay, I will say what this means: with `$J$` being the set of agents asked to consent, there is a constant `$c$` independent of `$i\in J$` such that `$c=\sum_{j\in J}w_{ij}$`. A term I would propose for this is that the weight graph&#39;s induced subgraph on `$J$` is `$$``$c$`-\[weighted-regular\].</code></pre>
+<ol start="26" type="1">
+<li><sup><strong>[^](#fnrefglxqnn0k1nf)</strong></sup></li>
+</ol>
+<pre><code>The weight graph being a disjoint union of cliques (e.g. everyone cares about their family) is a subcase, of which everyone being selfish is a subsubcase.</code></pre>
+<ol start="27" type="1">
+<li><sup><strong>[^](#fnrefv2806nsijz)</strong></sup></li>
+</ol>
+<pre><code>If you are looking for exactly one statement to prove, I strongly recommend this one. </code></pre>
+<ol start="28" type="1">
+<li><sup><strong>[^](#fnreftqlbh3eg4u)</strong></sup></li>
+</ol>
+<pre><code>There is a subtlety here. By a Pareto improvement, we mean a trade that any agent whose personal utility is affected would agree to, not a trade that any agent whose terminal utility is affected would agree to. The latter is a stronger condition, and under that latter stricter notion of \[Pareto improvement\]*, it is possible that increasing a weight would make an initial \[Pareto improvement\]* no longer be one.</code></pre>
+<ol start="29" type="1">
+<li><sup><strong>[^](#fnrefxy4wqltqb7c)</strong></sup></li>
+</ol>
+<pre><code>In many situations, this correlates quite well with the agents being equally wealthy. The idea is that a rich person could transfer a tiny fraction of their wealth, hence only incurring a slight personal utility cost, to a poor person, while increasing the personal utility of the poor person enormously, whereas any transfer of wealth in the opposite direction would hurt the poor person much more than it would benefit the rich person. The bidirectionally possible exchange rates in this case are bounded quite far away from `$1:1$`, so we would see this pair as having vastly different power levels under our formalism, and I think this matches our intuitive notion of power levels as well.
+
+I think this also holds up when the extremal rates of exchange are achieved by things stranger than wealth transfers, like in the manager-employee relationship (especially if there is a significant principal-agent-misalignment between the manager and the company), in the \[government official\]-citizen relationship (especially if the official is significantly misaligned with the state), or in the teacher-student relationship (again, especially if the teacher is misaligned with the school).</code></pre>
+<ol start="30" type="1">
+<li><sup><strong>[^](#fnrefrgfs3tkf4sh)</strong></sup></li>
+</ol>
+<pre><code>Under &quot;turning one&#39;s own personal utility into the personal utility of the other&quot;, I think we might want to include contracts involving more than these 2 people (assuming everyone else is happy with the contract), but only those which would still go through if every agent involved was selfish.</code></pre>
+<ol start="31" type="1">
+<li><sup><strong>[^](#fnref8y8q7me2dc6)</strong></sup></li>
+</ol>
+<pre><code>Assuming zero transaction costs, having equal power levels is a transitive relation, at least assuming one is allowed to propose a sequence of multiple trades (i.e. contract involving multiple people) in &quot;turning one&#39;s own personal utility into the personal utility of the other&quot;, so it defines an equivalence relation. Given transaction costs, stuff becomes trickier. I think transaction costs should decrease as the number of similar-power-pairs increases, and conditional on the number of pairs staying the same, as the similar-power-graph becomes a better expander. Saying something non-vague in this direction would be interesting. (Also, it feels like there could be some business ideas here?)</code></pre>
+<ol start="32" type="1">
+<li><sup><strong>[^](#fnrefhg0fkisay9h)</strong></sup></li>
+</ol>
+<pre><code>Actually, I lied here. I believe this argument works for selfish agents, but not necessarily for terminally caring agents, at least not with the notion of good the maximizing of which matters (i.e. the argument fails if we care about the sum of personal utilities; the argument might work if we care about the sum of terminal utilities, but I consider it incorrect to do so). I nevertheless think that the big claim from this paragraph is mostly correct; my true justification is a hope that the result from the simple selfish case reasonably extends to the messy case where people can care about each other.
+
+Actually, when these conditions are satisfied (which is suspicious, and it is especially suspicious that this would be preserved over time as e.g. the more capable or better-positioned agents become richer, but let&#39;s proceed), I guess it could only be the case that more caring decreases the total utility achieved compared to the case where everyone is selfish, but with a return to guaranteed optimality in the extremum where everyone is totally altruistic. So in this regime, I hereby reverse my earlier guess about more caring being better. My updated general guess is the following: more caring is good between agents at different power levels, and much less important (or perhaps as likely to be bad as good) between agents at similar power levels. (Also see [this](https://www.lesswrong.com/posts/jDQm7YJxLnMnSNHFu/moral-strategies-at-different-capability-levels).)</code></pre>
+<ol start="33" type="1">
+<li><sup><strong>[^](#fnrefp1g3pd992oa)</strong></sup></li>
+</ol>
+<pre><code>except for (arguably) pretty wacky [stuff](https://www.lesswrong.com/tag/acausal-trade)?</code></pre>
+<ol start="34" type="1">
+<li><sup><strong>[^](#fnrefke9pj87357)</strong></sup></li>
+</ol>
+<pre><code>To make this example work without circular definitions, we might want to be careful about defining love without reference to caring.</code></pre>
+<ol start="35" type="1">
+<li><sup><strong>[^](#fnrefh75h74o2lta)</strong></sup></li>
+</ol>
+<pre><code>I think the justification I would give for externalities not being that much of a problem (w.r.t. achieving maximum social welfare) otherwise is essentially the same as in our earlier discussion on when Kaldor-Hicks improvements can be transformed into Pareto improvements. (Also see the [Coase theorem](https://en.wikipedia.org/wiki/Coase_theorem).) As earlier, I think such an argument only works if the agents are selfish (and also if there are no issues with information and bargaining, which I am taking to be subsumed by the assumption that transaction costs are low).</code></pre>
+<ol start="36" type="1">
+<li><sup><strong>[^](#fnrefo10wlnqlnn)</strong></sup></li>
+</ol>
+<pre><code>A subsidy on `$A$` is sort of just a negative tax on `$A$`. It&#39;s also sort of just a tax on not-`$$``$A$`. I think most economics things about taxes generalize to subsidies in both of these ways without changing any of the math. But I could imagine an argument that there is some significant behavioral economics type (irrational) difference, sort of like (I would guess) there is an empirical difference between how people treat paying for bus tickets vs paying for penalty charges for not having a ticket. (There are of course also rational reasons for not just comparing \[ticket price\] to \[penalty fare times probability of getting caught\], e.g. having to waste some time, but I&#39;m guessing that there is a big empirical difference even after we count these as costs.)</code></pre>
+<ol start="37" type="1">
+<li><sup><strong>[^](#fnref1qxak3woezk)</strong></sup></li>
+</ol>
+<pre><code>Given no computational constraints, we might want to set taxes so that exactly the utility-maximizing actions are made, but this is clearly difficult.</code></pre>
+<ol start="38" type="1">
+<li><sup><strong>[^](#fnrefjb9tszmcsp)</strong></sup></li>
+</ol>
+<pre><code>There could be positive effects for the parents as well, but the parents account for those when making a decision. But externalities on people other than the child and the parent could also enter into the compensation calculation, if there is reason to believe that these would contribute significantly. </code></pre>
+<ol start="39" type="1">
+<li><sup><strong>[^](#fnrefp0o5st9uvl)</strong></sup></li>
+</ol>
+<pre><code>Furthermore, children subscribing to certain decision theories might compensate their parents later anyway (the situation here seems quite similar to [Parfit&#39;s hitchhiker](https://www.lesswrong.com/tag/parfits-hitchhiker)); state intervention would be superfluous in such cases. Or the parents could brainwash the child or do something to effectively make the child sign a contract to compensate them later.</code></pre>
+<ol start="40" type="1">
+<li><sup><strong>[^](#fnrefgbt1ztx1obq)</strong></sup></li>
+</ol>
+<pre><code>Of course, the weight might be different for different future versions of oneself. I think what I want to say here more precisely is that this is true for most (according to the empirical distribution) future versions of most people, or for the average future version of most people, or for the average future version, with the average taken both over people and over their future versions.</code></pre>
+<ol start="41" type="1">
+<li><sup><strong>[^](#fnrefc7xvfkjcu2)</strong></sup></li>
+</ol>
+<pre><code>The plots on page 362 [here](http://www.christosaioannou.com/Frederick,%20Loewenstein%20and%20O&#39;Donoghue%20(2002).pdf) (page 12 in the pdf) look like reasonably strong evidence of this, although I have some uncertainty regarding whether the studies were any good at capturing utility discounting (in particular, did not fall for something stupid like ignoring the fact that people are likely to be richer when older and hence value money less), or in fact about whether this was even what they were trying to do. I have not spent sufficient time on this to be reasonably certain about this empirical question. I will try to update the post if someone points out in the comments that one can&#39;t deduce the existence of time discounting from this data.
+
+One problem I anticipate with these plots is that they might not be accounting for uncertainty about one&#39;s future existence, which is a commonly cited reason for instrumental time discounting, and which would not constitute time discounting in the sense relevant to this subsection of my post. That said, I don&#39;t expect there to be a rational way to get the high discount rates indicated by the plots from instrumental discounting of this kind alone.
+
+(By the way, the plots include a data point where the discount rate seems to be graphically indistinguishable from 1, which seems interesting. (In fact, I&#39;d put like &gt;1% probability on that being the one study in this sample that correctly captured non-instrumental time discounting in utility...)  If anyone posts a link to that paper in the comments, I would be grateful for that.)</code></pre>
+<ol start="42" type="1">
+<li><sup><strong>[^](#fnrefcqmry6vuyz)</strong></sup></li>
+</ol>
+<pre><code>Or maybe you can come up with an argument for why it&#39;s not the case? Or maybe it is the case, but there is some completely different consideration that should dominate the analysis, which I&#39;ve missed?</code></pre>
+<ol start="43" type="1">
+<li><sup><strong>[^](#fnrefmxnlt22bn3)</strong></sup></li>
+</ol>
+<pre><code>I could see a counter-claim here saying that people still seem to vote for policies according to what benefits them individually. This could be because people are irrational, or because they are computationally limited and this is a heuristic, or because this is part of the perceived rules of the voting game (I would guess that many analyses of voting decisions assume that each person is voting according to a decision rule with a majority of the total weight on themselves or their family). One could make the plausible counter-counter-claim that perhaps a better description of what&#39;s going on is that people are trying to vote according to a decision rule with a majority of the total weight on other people (or more strictly people distant in the social graph), but it just often ends up being what&#39;s good for themselves, perhaps because of something like the [typical situation fallacy](https://www.lesswrong.com/tag/typical-mind-fallacy), but in a way which still makes the rest of this argument go through (perhaps because one is still less myopic when deciding for these other versions of oneself). But even if that counter-counter-claim fails, what we need for this argument is actually the much weaker claim the sum of weights assigned to other people is at least on the same order of magnitude as the weight assigned to oneself, which strikes me as eminently reasonable.</code></pre>
+<ol start="44" type="1">
+<li><sup><strong>[^](#fnreff4o56jkbi6i)</strong></sup></li>
+</ol>
+<pre><code>Or even if the child has a terminal time discount rate which is no lower, one could argue that a good heuristic for their computational boundedness is that they ignore consequences on future selves, and I think the rest of this section would still apply in that case.</code></pre>
+<ol start="45" type="1">
+<li><sup><strong>[^](#fnrefdn5jur9e1kd)</strong></sup></li>
+</ol>
+<pre><code>This justifies calling [unparenting](https://en.wikipedia.org/wiki/Free-range_parenting) &quot;North Korean style parenting&quot;. (I am actually very supportive of North-Korean style parenting – I think parents often epicfail at setting up an adequate incentive structure.)</code></pre>
+<ol start="46" type="1">
+<li><sup><strong>[^](#fnref6atcyvbh8of)</strong></sup></li>
+</ol>
+<pre><code>I might post my explanation as a comment later.</code></pre>
+<ol start="47" type="1">
+<li><sup><strong>[^](#fnrefp3oszdo2ti)</strong></sup></li>
+</ol>
+<pre><code>I guess these proposals might not give reasonable results for agents who care about stuff other than what is experienced by someone, or for agents who value their own experiences only conditional on the experiences of other agents that are involved. I currently think this is misguided, but even if it is misguided, I admit that this is still a major issue for this framework&#39;s usefulness for understanding agents. My hope is that even if you disagree with this being misguided, or agree that it is a major issue for explanatory/predictive purposes, you can still join me in drawing some conclusions from this model that have a decent chance of extending to models you would see as better, or to reality.</code></pre>
+<ol start="48" type="1">
+<li><sup><strong>[^](#fnrefx1vfqvx8tjn)</strong></sup></li>
+</ol>
+<pre><code>Among others, I have seen a philosophy professor at a fine Institvte use this argument.</code></pre>
+</body>
+</html>

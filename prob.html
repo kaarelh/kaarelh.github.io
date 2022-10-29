@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>prob</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="my-n-favorite-probability-puzzles">My <code>$n$</code> favorite
+probability puzzles</h1>
+<ol type="1">
+<li><code>$n$</code> points are chosen independently uniformly at random
+from <code>$[0,1]$</code>. What’s the expected value of the
+maximum?<sup id="a1"><a href="#f1">1</a></sup></li>
+<li>Let <code>$X,Y$</code> be random variables independently drawn from
+the same distribution on <code>$[0,1]$</code>. What’s the largest
+<code>$\mathbb{E}[|X-Y|]$</code> can be?<sup id="a2"><a
+href="#f2">2</a></sup></li>
+</ol>
+<p><b id="f1">1</b> There is a solution using integration, but I
+recommend trying to find a solution that does not use integration. See
+page 29 of <a href="./doc/asymptotic.pdf">this paper</a> for a solution.
+<a href="#a1">↩︎</a></p>
+<p><b id="f2">2</b> That is, propose an explicit constant <span
+class="math inline">\(c\)</span>, show that for any distribution,
+<code>$\mathbb{E}[|X-Y|]\leq c$</code>, and prove that there are
+distributions that get arbitrarily close to <span
+class="math inline">\(c\)</span> (or in particular, that there is a
+distribution with <code>$\mathbb{E}[|X-Y|]=c$</code>). <a
+href="#a1">↩︎</a></p>
+</body>
+</html>
