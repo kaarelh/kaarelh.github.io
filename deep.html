@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>deep</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="realizability-in-neural-nets">Realizability in neural nets</h1>
+<p>This post is a minisurvey discussing what functions can be computed
+(or approximated) by neural nets, and in particular on how this depends
+on the structural properties – depth, width – of the net. Other than
+being an interesting technical question, this also gives partial insight
+into why deep nets are capable (though it does not come close to
+explaining it fully, for reasons expanded on in the last section). The
+post is written for an audience that can read mathspeak, but assumes no
+prior familiarity with neural nets or learning theory.</p>
+<h2
+id="neural-nets-definitions-and-conventions-probably-skip-this-if-youre-familiar-with-neural-nets">Neural
+nets – definitions and conventions (probably skip this if you’re
+familiar with neural nets)</h2>
+<p>An <em>architecture</em> <span class="math inline">\(N\)</span> (of a
+feedforward neural net) is a directed graph <span
+class="math inline">\((V,E\subset V\times V)\)</span> together with a
+partition of the vertex set into layers, i.e. <span
+class="math inline">\(V=\bigsqcup_{i=0}^d L_i\)</span> – the number
+<span class="math inline">\(d\)</span> is called the <em>depth</em> of
+the net, and <span class="math inline">\(\max_{i\in \{1,2,\ldots,d-1\}}
+|L_i|\)</span> is called the <em>width</em><a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> of
+the net; with edges running only between consecutive layers and pointed
+always in the “forward direction”, i.e. <span
+class="math inline">\(E\subseteq \bigcup_{i=0}^{d-1} L_i\times
+L_{i+1}\)</span>.<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> A (trained) <em>neural net</em>
+<span class="math inline">\((N,(w_e)_{e\in E}))\)</span> is an
+architecture together with a labeling of edges with real numbers,
+i.e. an architecture together with a tuple <span
+class="math inline">\((w_e)_{e\in E})\in \mathbb{R}^E\)</span>.<a
+href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a> So one architecture corresponds to
+many neural nets – one for each setting of the tuple of parameters <span
+class="math inline">\((w_e)_{e\in E}\)</span>.</p>
+<p>The vertices in <span class="math inline">\(L_0\)</span> are called
+input vertices, and the vertices in <span
+class="math inline">\(L_d\)</span> are output vertices. For this post,
+we will call the number of input vertices <span
+class="math inline">\(n=|L_0|\)</span>, and we will assume that a neural
+net has exactly <span class="math inline">\(1=|L_d|\)</span> output
+vertex (in ML-speak, this neural net could serve as a predictor in a
+regression task with <span class="math inline">\(n\)</span> input
+features and <span class="math inline">\(1\)</span>-dimensional labels).
+We think of this neural net as performing computation (a <em>forward
+pass</em>) as follows. First, put some real numbers in the <span
+class="math inline">\(n\)</span> input nodes (for example, with <span
+class="math inline">\(n=256\)</span>, these could be the <span
+class="math inline">\(16\cdot 16=256\)</span> pixel intensity values for
+a single grayscale <span class="math inline">\(16\times 16\)</span>
+image) – we think of these as the input of the computation. Then,
+propagate values through the layers up to <span
+class="math inline">\(d-1\)</span> according to the following rule. Once
+we have a number <span class="math inline">\(z_u\in \mathbb{R}\)</span>
+written at each vertex <span class="math inline">\(u\in L_i\)</span>, to
+compute the number <span class="math inline">\(z_{v}\)</span> to write
+at a vertex <span class="math inline">\(v\in L_{i+1}\)</span>, take the
+linear combination of all the numbers at vertices on the other end of
+the edges into <span class="math inline">\(v\)</span>, with coefficients
+being the weights on the edges, and send this linear combination through
+a univariate function <span class="math inline">\(\sigma\colon
+\mathbb{R}\to \mathbb{R}\)</span>, called the <em>activation
+function</em>. Until further notice, we will take <span
+class="math inline">\(\sigma=\max(0,x)\)</span>, commonly called ReLU
+(rectified linear unit), which is one of the most common activation
+functions used. In maths, <span
+class="math display">\[z_{v}=\sigma\left(\sum_{u\in L_{i-1} \text{ s.t.
+}(u,v)\in E}w_{(u,v)}z_u\right).\]</span></p>
+<p>Once we do this for each vertex <span class="math inline">\(v\in
+L_i\)</span>, we have found all the numbers to write at vertices on
+layer <span class="math inline">\(i\)</span>. Repeat this for each layer
+in sequence, i.e. with <span class="math inline">\(i=1,2,\ldots,
+d-1\)</span>. For <span class="math inline">\(L_d\)</span>, take the
+linear combination in the same way, but don’t send it through the
+activation function. So we finally end up with some value written at the
+unique vertex in <span class="math inline">\(L_d\)</span>, which we
+think of as the output of the computation. In the sense of the
+computation we just defined, a neural network <span
+class="math inline">\(N\)</span> implements a function <span
+class="math inline">\(f_N\colon \mathbb{R}^n \to \mathbb{R}\)</span>.
+Restating the topic of this survey in our newfound language: we will be
+discussing results about the richness of the set of functions
+implemented by neural nets with a given architecture, in particular
+examining how this richness depends on the depth and the width.</p>
+<p>In fact, all our neural nets will have <em>fully connected
+layers</em>, i.e. <span class="math inline">\(E=\bigcup_{i=0}^{d-1}
+L_i\times L_{i+1}\)</span>. Any architecture with only a subset of these
+edges is able to implement a subset of the functions that can be
+implemented in a fully connected architecture, just by copying the
+weights of edges which are present and setting the the rest of the
+weights to <span class="math inline">\(0\)</span>.<a href="#fn4"
+class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<h2
+id="an-explicit-description-of-what-functions-can-be-computed-by-relu-dnns">An
+~explicit description of what functions can be computed by ReLU
+DNNs</h2>
+<p>We will start our discussion of realizability with some specifics
+about the functions which nets with ReLU actications can compute. The
+first headline will be a theorem from <a
+href="https://arxiv.org/pdf/1611.01491.pdf">Understanding Deep Neural
+Networks with Rectified Linear Units</a> which says that with a little
+bit of depth (but an unclear amount of width), one can get any piecewise
+linear function (PWL). But we will need a few definitions before we get
+there.</p>
+<blockquote>
+<blockquote>
+<p><strong>Definition</strong> (Polyhedra). A polyhedron in <span
+class="math inline">\(\mathbb{R}^\ell\)</span> is a set of the form
+<span class="math inline">\(\{x\in \mathbb{R}^\ell \mid Ax\leq
+b\}\)</span> for some <span class="math inline">\(k\times \ell\)</span>
+real matrix <span class="math inline">\(A\)</span> and vector <span
+class="math inline">\(b\in \mathbb{R}^k\)</span>. Equivalently, a
+polyhedron is the set of solutions to a finite list of linear non-strict
+inequalities. Equivalently, a polyhedron is the intersection of finitely
+many closed half-spaces.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p><strong>Lemma</strong>. The intersection of two polyhedra is a
+polyhedron.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>Proof. For polyhedra <span class="math inline">\(P\)</span> and <span
+class="math inline">\(Q\)</span>, the intersection <span
+class="math inline">\(P\cap Q\)</span> is the set of all points
+satisfying the union of the set of inequalities corresponding to <span
+class="math inline">\(P\)</span> and the set of inequalities
+corresponding to <span class="math inline">\(Q\)</span>.</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p><strong>Definition</strong> (PWL). We say a function <span
+class="math inline">\(f\colon \mathbb{R}^\ell\to \mathbb{R}^m\)</span>
+is continuous piecewise linear (PWL) if there is a finite cover of <span
+class="math inline">\(\mathbb{R}^\ell\)</span> with polyhedra such that
+the restriction of <span class="math inline">\(f\)</span> to any of
+these polyhedra is affine linear (i.e. of the form <span
+class="math inline">\(x\mapsto Cx+d\)</span>).</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p><strong>Lemma</strong>. The composition of PWL <span
+class="math inline">\(f\colon \mathbb{R}^\ell\to \mathbb{R}^m\)</span>
+and PWL <span class="math inline">\(g\colon \mathbb{R}^m\to
+\mathbb{R}^n\)</span> is PWL.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>Proof. tl;dr: Pull back the polyhedral cover of <span
+class="math inline">\(\mathbb{R}^m\)</span> (given for <span
+class="math inline">\(g\)</span>) onto <span
+class="math inline">\(\mathbb{R}^\ell\)</span> under <span
+class="math inline">\(f\)</span>, and intersect with the polyhedral
+cover for <span class="math inline">\(f\)</span>. This creates a refined
+cover of <span class="math inline">\(\mathbb{R}^\ell\)</span> such that
+<span class="math inline">\(g\circ f\)</span> restricts to a linear
+function on each set in the cover.</p>
+</blockquote>
+<blockquote>
+<p>complete version: Pick a polyhedral cover of <span
+class="math inline">\(\mathbb{R}^\ell\)</span> such that <span
+class="math inline">\(f\)</span> is linear on each polyhedron, <span
+class="math inline">\(\mathbb{R}^\ell=\bigcup_{i=1}^p P_i\)</span> and
+similarly for <span class="math inline">\(g\)</span>, <span
+class="math inline">\(\mathbb{R}^m=\bigcup_{j=1}^q Q_j\)</span>.<a
+href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a> Fix a polyhedron <span
+class="math inline">\(P_i\)</span>; trivially <span
+class="math inline">\(f\)</span> is linear on this polyhedron, so given
+by <span class="math inline">\(x\mapsto y=Cx+d\)</span>. Take a
+description of a polyhedron <span class="math inline">\(Q_j\)</span> via
+inequalities, let’s say this is <span class="math inline">\(A y\leq
+b\)</span>. Then given <span class="math inline">\(x\in P_i\)</span>,
+the condition for <span class="math inline">\(x\)</span> to land in
+<span class="math inline">\(Q_j\)</span> under <span
+class="math inline">\(f\)</span> is <span
+class="math inline">\(A(Cx+d)\leq b\)</span>, which we can rewrite as
+<span class="math inline">\((AC)x\leq b-Ad\)</span>. We define
+$P_{i,j}=P_i{x^<span class="math inline">\((AC)x\leq b-Ad\)</span>}$.
+Note that <span class="math inline">\(P_{i,j}\)</span> is a polyhedron
+because it is the intersection of two polyhedra. Also note that the
+restriction of <span class="math inline">\(g\circ f\)</span> to <span
+class="math inline">\(P_{i,j}\)</span> is the composition of the
+restriction of <span class="math inline">\(f\)</span> to <span
+class="math inline">\(P_{i,j}\subseteq P_i\)</span> with the restriction
+of <span class="math inline">\(g\)</span> to <span
+class="math inline">\(Q_j\)</span>, both of which are affine linear.
+Since the composition of two affine linear functions is affine linear,
+the composition of <span class="math inline">\(g\circ f\)</span> to
+<span class="math inline">\(P_{i,j}\)</span> is thus affine linear. For
+fixed <span class="math inline">\(i\)</span>, the collection <span
+class="math inline">\(\{P_{i,j}|1\leq j\leq q\}\)</span> is a cover of
+<span class="math inline">\(P_i\)</span> because every point in <span
+class="math inline">\(P_i\)</span> lands in at least one <span
+class="math inline">\(Q_j\)</span> under <span
+class="math inline">\(f\)</span>. Therefore, the sets <span
+class="math inline">\(P_{i,j}\)</span> with any <span
+class="math inline">\((i,j)\)</span> with <span
+class="math inline">\(1\leq i \leq p\)</span> and <span
+class="math inline">\(1\leq j \leq q\)</span> form a cover of <span
+class="math inline">\(\mathbb{R}^\ell\)</span>. So we have constructed a
+cover on which <span class="math inline">\(g\circ f\)</span> restricts
+to affine linear functions. This means that <span
+class="math inline">\(g\circ f\)</span> is affine linear.</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p><strong>Theorem</strong> (Arora, Basu, Mianjy, Mukherjee; 2018).
+Every <span class="math inline">\(\mathbb{R}^n\to \mathbb{R}\)</span>
+neural net with ReLU activations represents a piecewise linear function,
+and every piecewise linear function <span
+class="math inline">\(\mathbb{R}^n\to \mathbb{R}\)</span> can be
+represented by a ReLU neural net with depth at most <span
+class="math inline">\(\lceil \log_2(n+1)\rceil + 1\)</span>.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>Proof. Given the vector of numbers written at vertices in <span
+class="math inline">\(L_{i-1}\)</span>, i.e. <span
+class="math inline">\((z_u)_{u\in L_{i-1}}\in
+\mathbb{R}^{|L_{i-1}|}\)</span>, the vector of numbers written at
+vertices in <span class="math inline">\(L_i\)</span>, i.e. <span
+class="math inline">\((z_v)_{v\in L_i} \in \mathbb{R}^{|L_i|}\)</span>
+can be obtained by multiplying the former vector by the <span
+class="math inline">\(|L_i|\times |L_{i-1}|\)</span> matrix with entries
+<span class="math inline">\(w_{(u,v)}\)</span>, and then passing each
+coordinate through a ReLU. Taking the ReLU of just coordinate <span
+class="math inline">\(i\)</span> of a vector is a PWL function <span
+class="math inline">\(\mathbb{R}^m\to \mathbb{R}^m\)</span>, since its
+restriction to the polyhedron <span class="math inline">\(x_i\geq
+0\)</span> is linear and its restriction to the polyhedron <span
+class="math inline">\(x_i\leq 0\)</span> is linear, and these two
+polyhedra partition <span class="math inline">\(\mathbb{R}^m\)</span>.
+The function taking the ReLU of every coordinate is equal to the
+composition of <span class="math inline">\(m\)</span> functions, each of
+which takes the ReLU of just one coordinate. In conclusion, a neural net
+can be written as a composition of a bunch of matrix multiplications
+which are linear, so PWL, and one-coordinate ReLUs which are also PWL.
+Since a composition of PWL functions is PWL, it follows that any
+function implemented by a ReLU neural net is PWL.</p>
+</blockquote>
+<blockquote>
+<p>The other claim is trickier.</p>
+</blockquote>
+<h2 id="universal-approximations">Universal approximations</h2>
+<p>It turns out that neural nets with just one hidden layer are
+universal approximators (provided unbounded width):</p>
+<p>(theorem to be copied here)</p>
+<p>(proof/sketch here maybe)</p>
+<h2 id="depth-separations">Depth separations</h2>
+<p>Does this mean that depth is totally unhelpful (for representing
+functions)? No, because there are functions which can be represented
+with way fewer parameters for a deep network than for a shallow one, at
+least for ReLU activations. We will call such functions <em>depth
+separators</em>. Telgarsky gave an explicit family of functions for
+which one needs an exponential amount of width to match a polynomial
+amount of depth. To construct these functions, blabla (put construction
+here)</p>
+<p>And here’s Telgarsky’s theorem saying these are indeed depth
+separators:</p>
+<p>(say something about the proof here)</p>
+<h2 id="width-separations">Width separations</h2>
+<p>I think there isn’t such a thing (put proof here)</p>
+<h2 id="something-wacky">Something wacky</h2>
+<p>How does the above depend on the activation functions used? Actually,
+a lot. Let’s define <span class="math inline">\(\sigma=\)</span> (copy
+from slide 55). <span class="math inline">\(\sigma\)</span> is not the
+nicest function known to man, but it’s not that bad either: (list nice
+properties)</p>
+<p>It turns out that with <span class="math inline">\(\sigma\)</span>
+activations, we can approximate anything with width linear in the input
+dimension and depth <span class="math inline">\(3\)</span>.</p>
+<p>I think the takeaway here is that all the results on depth
+separations above are mostly quirks of ReLU?</p>
+<h1
+id="other-reasons-why-this-does-not-constitute-much-of-an-explanation-of-why-depth-is-useful">Other
+reasons why this does not constitute much of an explanation of why depth
+is useful</h1>
+<p>For a given architecture Intuitively, in the limit of infinite data
+points <span class="math inline">\((x_i,f(x_i))\)</span> for a given
+function <span class="math inline">\(f\)</span>, eventually we should be
+able to get</p>
+<p>Actually, we don’t have lots of data. There will generally be lots of
+functions that interpolate through all the training data perfectly, both
+for a wide net and also for a deep one. All the expressivity gap tells
+us is that the correct function is one of these functions for the deep
+net. To give an experimental example</p>
+<h1 id="acknowledgments">Acknowledgments</h1>
+<p>I wrote this piece for the distillation week of John Wentworth’s
+SERIMATS training program, and while being a Prague Fall Season
+resident. I would like to thank Peter Hozák, Anton Sinner, and Kay
+Kozaronek for feedback. The main reference sources I used were <a
+href="http://people.csail.mit.edu/moitra/408b.html">Ankur Moitra’s
+Theoretical Foundations for Deep Learning lecture notes</a>, <a
+href="https://hanin.princeton.edu/DepthSeparations.pdf">Itay Safran’s
+slides on Depth Separations in Neural Networks</a>, and <a
+href="https://mjt.cs.illinois.edu/dlt/two.pdf">Matus Telgarsky’s Deep
+learning theory</a> <a
+href="https://mjt.cs.illinois.edu/dlt/index.pdf">lecture notes</a>.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note the indexing – the input and output layers are not
+included.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Replacing the requirement that an edge starting from one
+layer has to go to the next with the graph just being acyclic, the rest
+of this section would still make sense; this broader class of neural
+nets one gets includes (or potentially equals – after spending <span
+class="math inline">\(10\)</span> minutes to review, I am not sure if a
+definition has become canonical yet) <em>residual neural nets
+(ResNets)</em>. Also getting rid of the acyclicity requirement, one gets
+<em>recurrent neural nets (RNNs)</em>, for which one needs to reframe
+the net’s computation (and training) somewhat more substantially.<a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>In the literature, it is often the case that each vertex
+<span class="math inline">\(v\in V\)</span> additionally has a parameter
+<span class="math inline">\(b_v\)</span> attached, called the
+<em>bias</em> of <span class="math inline">\(v\)</span>, but the neural
+nets we consider for this post won’t have that.<a href="#fnref3"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>This does not mean that any net with layers which are
+not fully connected is worse in some general sense, only in terms of
+expressive power. Having fewer edges means having fewer parameters,
+which can make things more feasible computationally compared to a fully
+connected net with the same layer sizes. Having carefully picked edges
+can endow the net with better inductive biases (compared to a fully
+connected net with the same parameter count) – I think this is e.g. one
+idea behind <em>Convolutional neural networks (CNNs)</em>.<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>These partitions exist because <span
+class="math inline">\(f\)</span> and <span
+class="math inline">\(g\)</span> are PWL (by definition of PWL).<a
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
