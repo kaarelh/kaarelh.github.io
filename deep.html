@@ -28,7 +28,8 @@
   <![endif]-->
 </head>
 <body>
-<h1 id="realizability-in-neural-nets">Realizability in neural nets</h1>
+<h1 id="realizability-in-neural-nets-work-in-progress">Realizability in
+neural nets (work in progress)</h1>
 <p>This post is a minisurvey discussing what functions can be computed
 (or approximated) by neural nets, and in particular on how this depends
 on the structural properties – depth, width – of the net. Other than
@@ -91,9 +92,9 @@ being the weights on the edges, and send this linear combination through
 a univariate function <span class="math inline">\(\sigma\colon
 \mathbb{R}\to \mathbb{R}\)</span>, called the <em>activation
 function</em>. Until further notice, we will take <span
-class="math inline">\(\sigma=\max(0,x)\)</span>, commonly called ReLU
-(rectified linear unit), which is one of the most common activation
-functions used. In maths, <span
+class="math inline">\(\sigma(x)=\sigma_r(x)=\max(0,x)\)</span>, commonly
+called ReLU (rectified linear unit), which is one of the most common
+activation functions used. In maths, <span
 class="math display">\[z_{v}=\sigma\left(\sum_{u\in L_{i-1} \text{ s.t.
 }(u,v)\in E}w_{(u,v)}z_u\right).\]</span></p>
 <p>Once we do this for each vertex <span class="math inline">\(v\in
@@ -276,10 +277,17 @@ function implemented by a ReLU neural net is PWL.</p>
 <p>The other claim is trickier.</p>
 </blockquote>
 <h2 id="universal-approximations">Universal approximations</h2>
-<p>It turns out that neural nets with just one hidden layer are
+<p>It turns out that neural nets with depth <span
+class="math inline">\(d=2\)</span>, i.e. just one hidden layer, are
 universal approximators (provided unbounded width):</p>
+<p>https://youtu.be/6Ss9kFTUS-Y?t=2987</p>
 <p>(theorem to be copied here)</p>
 <p>(proof/sketch here maybe)</p>
+<p>There is also a result</p>
+<p>Barron’s thm, explain Stone-Weierstrass, infinite width + sampling
+https://youtu.be/6Ss9kFTUS-Y?t=4588, cosine
+activations-&gt;everything</p>
+<p>mention strongest result with any polynomial activations</p>
 <h2 id="depth-separations">Depth separations</h2>
 <p>Does this mean that depth is totally unhelpful (for representing
 functions)? No, because there are functions which can be represented
@@ -289,9 +297,32 @@ separators</em>. Telgarsky gave an explicit family of functions for
 which one needs an exponential amount of width to match a polynomial
 amount of depth. To construct these functions, blabla (put construction
 here)</p>
+<p>start with depth 2 missing https://youtu.be/6Ss9kFTUS-Y?t=3328</p>
+<p>then any depth Telgarsky theorem, spike intuition
+https://youtu.be/6Ss9kFTUS-Y?t=3401</p>
 <p>And here’s Telgarsky’s theorem saying these are indeed depth
 separators:</p>
+<p>For Telgarsky’s result, we will start by introducing a neat little
+function called the tent map.</p>
+<blockquote>
+<p><strong>Definition</strong> (tent map). The tent map <span
+class="math inline">\(\Delta\colon \mathbb{R}\to \mathbb{R}\)</span> is
+given by <span
+class="math inline">\(\Delta(x)=\sigma_r\left(\sigma_r(2x)-\sigma_r(4x-2)\right)=\begin{cases}
+2x &amp; \text{if } 0\leq x&lt;\frac{1}{2}\\ 2(1-x) &amp; \text{if
+}\frac{1}{2}\leq x&lt;1\\ 0
+&amp;\text{otherwise.}\end{cases}\)</span>.</p>
+</blockquote>
+<p>The nice thing about this function is that it gets really spiky under
+composition with itself.</p>
+<blockquote>
+<p><strong>Lemma</strong> ()</p>
+</blockquote>
 <p>(say something about the proof here)</p>
+<p>mention open problem of going from k layers to k+1</p>
+<p>mention vague open problem of understanding whether for natural
+functions, depth helps (in these examples, crazy Lipschitz constant)</p>
+<h2 id="yarotsky-2016-thm-with-polys">Yarotsky 2016 thm with polys</h2>
 <h2 id="width-separations">Width separations</h2>
 <p>I think there isn’t such a thing (put proof here)</p>
 <h2 id="something-wacky">Something wacky</h2>
@@ -305,6 +336,8 @@ activations, we can approximate anything with width linear in the input
 dimension and depth <span class="math inline">\(3\)</span>.</p>
 <p>I think the takeaway here is that all the results on depth
 separations above are mostly quirks of ReLU?</p>
+<p>also mention 3 from here, I think need two kinds of activations and
+one linear size hidden layer https://youtu.be/6Ss9kFTUS-Y?t=4720</p>
 <h1
 id="other-reasons-why-this-does-not-constitute-much-of-an-explanation-of-why-depth-is-useful">Other
 reasons why this does not constitute much of an explanation of why depth
@@ -326,10 +359,12 @@ Kozaronek for feedback. The main reference sources I used were <a
 href="http://people.csail.mit.edu/moitra/408b.html">Ankur Moitra’s
 Theoretical Foundations for Deep Learning lecture notes</a>, <a
 href="https://hanin.princeton.edu/DepthSeparations.pdf">Itay Safran’s
-slides on Depth Separations in Neural Networks</a>, and <a
+slides on Depth Separations in Neural Networks</a>, <a
 href="https://mjt.cs.illinois.edu/dlt/two.pdf">Matus Telgarsky’s Deep
 learning theory</a> <a
-href="https://mjt.cs.illinois.edu/dlt/index.pdf">lecture notes</a>.</p>
+href="https://mjt.cs.illinois.edu/dlt/index.pdf">lecture notes</a>, and
+<a href="https://www.youtube.com/watch?v=6Ss9kFTUS-Y">this survey
+talk</a> by Telgarsky.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document"
 role="doc-endnotes">
 <hr />

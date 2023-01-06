@@ -20,12 +20,86 @@
     }
   </style>
   <link rel="stylesheet" href="main.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
 </head>
 <body>
-<h1 id="the-trouble-with-unbounded-utility-functions">The trouble with
-unbounded utility functions</h1>
+<h1
+id="the-trouble-with-unbounded-utility-functions-work-in-progress">The
+trouble with unbounded utility functions (work in progress)</h1>
+<p>I claim that given Solomonoff induction, expected utility won’t
+converge for an unbounded utility function, for any decision. (This is a
+claim that has been thrown In other words, an agent following these
+rules is subject to chronic Pascal’s mugging. This is mostly just a
+formalization of <a
+href="https://www.lesswrong.com/posts/a5JAiTdytou3Jg749/pascal-s-mugging-tiny-probabilities-of-vast-utilitiesm">this
+post</a>, an attempt at getting closer to reality than
+https://arxiv.org/abs/0712.4318, an attempt of presenting this case
+formally but with alternative assumptions than in
+https://arxiv.org/pdf/0907.5598.pdf, and an attempt of
+formalizing/distilling the discussion in the thread above <a
+href="https://www.lesswrong.com/posts/hbmsW2k9DxED5Z4eJ/impossibility-results-for-unbounded-utilities?commentId=GmmjPvYvEBiX8BtxP">this
+comment</a>.</p>
+<h2 id="the-argument">The argument</h2>
+<p>For the first version of this argument, assume that the universe is
+implemented in a Turing machine with some part which is a non-real
+pre-processing workspace and some part which is the “real implemented
+universe”. (I admit that this is a potentially weird metaphysical
+claim.) Also assume that we are total utilitarians that think utility
+scales linearly with the number of copies of an identical experience
+being implemented (at different times, let’s say). As far as Solomonoff
+induction can tell, the following list specifies a possibility for how
+the universe could be, given your past observations:</p>
+<ol type="1">
+<li>You making every observation you made until now was hard-coded into
+the TM.</li>
+<li>As for the future, there is a function implemented which simulates
+one human living a long happy life.</li>
+<li>After creating all the hard-coded observed experiences, the TM calls
+this function <span class="math inline">\(n\)</span> times, where <span
+class="math inline">\(n=f(m)\)</span> is a function computed
+earlier.</li>
+<li>This <span class="math inline">\(f(m)\)</span> is <span
+class="math inline">\(m\uparrow \uparrow \uparrow m\)</span>, which is
+computed in the workspace.</li>
+<li><span class="math inline">\(m\)</span> gets assigned some
+arbitrarily chosen value.</li>
+</ol>
+<p>The utility of this scales linearly with <span
+class="math inline">\(f(m)\)</span>. The length of this program is a
+(huge) constant <span class="math inline">\(C\)</span> independent of
+<span class="math inline">\(m\)</span>, plus <span
+class="math inline">\(\log m\)</span> bits for specifying <span
+class="math inline">\(m\)</span>. Since all previous observations were
+hard-coded into the TM, the universe being this way is trivially
+consistent with all observations thus far. Its Solomonoff prior is thus
+(a constant independent of <span class="math inline">\(m\)</span> times)
+<span class="math inline">\(2^{-C-\log m}=2^{-C}/m\)</span>. Since <span
+class="math inline">\(\sum_m f(m)/m\)</span> diverges, expected utility
+diverges.</p>
+<p>We can probably get rid of the split of the TM into a background
+workspace and a “real part”, as it seems like the rest of the
+computations (like computing a big number) should not change the value
+of the universe much, even if these are also real. We can get rid of the
+assumption that we are total utilitarians, as long as our utility
+function has example universes with provably large utilities. We can
+then loop over universes in the workspace to find ones with arbitrarily
+high utility, and then implement those.</p>
+<p>issue here with showing loop does not require simulating the
+universes and creating suffering. should have a really safe way of
+proving that a universe is high-utility, also issues with cached lives
+https://www.scottaaronson.com/papers/philos.pdf</p>
+<h2 id="leverage-penalty">leverage penalty?</h2>
+<p>solomonoff + self-sampling assumption</p>
+<p>but this requires moral worth to be tied to agency, otherwise could
+construct hypotheses with lots of non-agent patients?</p>
+<p>could be interesting argument for moral worth requiring agency</p>
+<h2 id="acknowledgments">Acknowledgments</h2>
+<p>I would like to thank Sahil Kulshrestha for many helpful
+discussions</p>
 </body>
 </html>
