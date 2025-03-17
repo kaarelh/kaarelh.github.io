@@ -12,8 +12,11 @@
     div.columns{display: flex; gap: min(4vw, 1.5em);}
     div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
     ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
       width: 0.8em;
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
@@ -23,9 +26,6 @@
   <script
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
   type="text/javascript"></script>
-  <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
 </head>
 <body>
 <h1 id="realizability-in-neural-nets-work-in-progress">Realizability in
@@ -311,7 +311,7 @@ function called the tent map.</p>
 class="math inline">\(\Delta\colon \mathbb{R}\to \mathbb{R}\)</span> is
 given by <span
 class="math inline">\(\Delta(x)=\sigma_r\left(\sigma_r(2x)-\sigma_r(4x-2)\right)=\begin{cases}
-2x &amp; \text{if } 0\leq x&lt;\frac{1}{2}\\ 2(1-x) &amp; \text{if
+2x &amp; \text{if }  0\leq x&lt;\frac{1}{2}\\ 2(1-x) &amp; \text{if
 }\frac{1}{2}\leq x&lt;1\\ 0
 &amp;\text{otherwise.}\end{cases}\)</span>.</p>
 </blockquote>
