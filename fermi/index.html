@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Fermi Estimation Game</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1f2430; --ink:#e8eaed; --muted:#9aa3b2;
+    --accent:#6ea8fe; --good:#4ade80; --mid:#fbbf24; --bad:#f87171; --line:#2a3140;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent)}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+  h1{font-size:1.6rem;margin:.2em 0 .1em}
+  h2{font-size:1.15rem;margin:0 0 .4em}
+  .sub{color:var(--muted);margin:0 0 1.2em}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin:14px 0}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .spread{justify-content:space-between}
+  button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 18px;
+    background:var(--accent);color:#06101f;font-weight:600}
+  button.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:500}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  input[type=text],input[type=number]{font:inherit;background:var(--panel2);color:var(--ink);
+    border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+  input[type=text].answer{width:230px;font-variant-numeric:tabular-nums}
+  label{color:var(--muted)}
+  .unit{color:var(--muted);font-weight:600}
+  .pill{font-size:.82rem;color:var(--muted);background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:4px 11px}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.05rem}
+  .timer.warn{color:var(--mid)} .timer.crit{color:var(--bad)}
+  .prompt{font-size:1.18rem;line-height:1.45;margin:6px 0 18px}
+  .muted{color:var(--muted)}
+  .reveal dt{color:var(--muted);font-size:.85rem;margin-top:10px}
+  .reveal dd{margin:2px 0 0;font-size:1.05rem;font-variant-numeric:tabular-nums}
+  .scoreBig{font-size:2.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .bar{height:9px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-top:6px}
+  .bar > i{display:block;height:100%;background:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:.92rem}
+  th{color:var(--muted);font-weight:600}
+  td.num,th.num{text-align:right}
+  .note{color:var(--muted);font-size:.92rem;margin-top:10px}
+  .hidden{display:none}
+  .footer{color:var(--muted);font-size:.82rem;margin-top:26px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start">
+    <h1>AI Fermi Estimation</h1>
+    <p class="sub">Estimate each quantity. Scored by distance in natural-log space, mapped to 0–1. Closer is better; no answer scores 0.</p>
+    <div class="card">
+      <div class="row spread">
+        <div>
+          <label for="numq">Number of questions</label><br>
+          <input id="numq" type="number" min="1" step="1" value="10" style="width:90px"> <span class="unit" id="numqMax"></span>
+          <div class="note">Drawn at random from the full set each game.</div>
+        </div>
+        <div>
+          <label for="mins">Time per question</label><br>
+          <input id="mins" type="number" min="0" step="0.5" value="2" style="width:90px"> <span class="unit">min</span>
+          <div class="note">Set to 0 for no time limit.</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:18px">
+        <button id="startBtn">Start</button>
+        <span class="pill" id="qcount"></span>
+      </div>
+    </div>
+    <details class="card">
+      <summary style="cursor:pointer">How scoring works</summary>
+      <p class="note">For a guess <code>g</code> and true value <code>t</code> (both &gt; 0), the log-distance is
+      <code>d = |ln(g) − ln(t)|</code> (the number of e-fold errors). The score is
+      <code>max(0, 1 − d/cap)</code> — linear in <code>d</code>, hitting 0 at the question's <em>cap</em> and flat beyond.
+      The cap is per-question: tighter for things an AI-aware crowd should nail (doubling times, cap ≈ 1.2–1.5),
+      looser for genuinely fuzzy quantities (obscure dollar figures, multi-step computes, cap ≈ 5–6), set so the
+      expected score per question is roughly constant. Non-positive, blank, or unanswered → 0.</p>
+    </details>
+  </section>
+
+  <!-- QUESTION -->
+  <section id="quiz" class="hidden">
+    <div class="row spread">
+      <span class="pill" id="progress"></span>
+      <span class="pill">Avg: <b id="runningAvg">—</b></span>
+      <span class="timer" id="timer">--:--</span>
+    </div>
+    <div class="card">
+      <div class="prompt" id="prompt"></div>
+      <div class="row">
+        <input id="answer" class="answer" type="text" inputmode="decimal"
+               placeholder="e.g. 1.76e12" autocomplete="off">
+        <span class="unit" id="unit"></span>
+      </div>
+      <div class="note">Accepts plain numbers, scientific notation (<code>4e5</code>), or <code>1.76×10^12</code>.</div>
+      <div class="row" style="margin-top:18px">
+        <button id="submitBtn">Submit</button>
+        <button id="skipBtn" class="ghost">Skip</button>
+        <button id="finishBtn" class="ghost" style="margin-left:auto">End game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVEAL -->
+  <section id="reveal" class="hidden">
+    <div class="card">
+      <div class="row spread">
+        <h2 id="rTitle">Result</h2>
+        <div style="text-align:right">
+          <div class="scoreBig" id="rScore">0.00</div>
+          <div class="muted" style="font-size:.8rem">this question</div>
+        </div>
+      </div>
+      <div class="bar"><i id="rBar" style="width:0%"></i></div>
+      <dl class="reveal">
+        <div class="row" style="gap:40px;align-items:flex-start">
+          <div><dt>Your answer</dt><dd id="rYour">—</dd></div>
+          <div><dt>Correct (per source)</dt><dd id="rTrue">—</dd></div>
+          <div><dt>Off by</dt><dd id="rFactor">—</dd></div>
+          <div><dt>log-distance</dt><dd id="rDist">—</dd></div>
+        </div>
+      </dl>
+      <p class="note" id="rNote"></p>
+      <p class="note">Source: <a id="rSrc" href="#" target="_blank" rel="noopener noreferrer"></a></p>
+      <div class="row" style="margin-top:16px">
+        <button id="nextBtn">Next</button>
+        <button id="finishBtn2" class="ghost" style="margin-left:auto">End game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="hidden">
+    <div class="card">
+      <h2>Done</h2>
+      <p>Average score <b id="eAvg"></b> per question &nbsp;·&nbsp; <b id="eCount"></b> answered &nbsp;·&nbsp; total <b id="eTotal"></b></p>
+      <div style="overflow-x:auto">
+        <table id="eTable">
+          <thead><tr><th>#</th><th>Question</th><th class="num">Your</th><th class="num">True</th><th class="num">Score</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button id="restartBtn">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="footer">Mostly made by Claude Opus 4.8, with some curation from Kaarel. A single static HTML page — edit the <code>QUESTIONS</code> array in the source to add more.</p>
+</div>
+
+<script>
+/* ---------------- Scoring ----------------
+   d = |ln(guess) - ln(truth)| = number of e-fold errors (>= 0).
+   Score is LINEAR in d: 1 at d=0, falling to 0 at d = cap, flat (0) beyond.
+   The cap (`maxOOM`, in e-folds) is PER QUESTION: smaller where an informed-
+   but-not-expert AI crowd should nail it, larger for genuinely fuzzy quantities.
+   Heuristic: cap ~= 2 x that crowd's typical |ln(guess/truth)|, so the expected
+   score per question lands near 0.5 and is roughly constant across questions. */
+const DEFAULT_CAP = 4;   // used if a question omits maxOOM
+
+function scoreFor(guess, truth, cap){
+  cap = cap || DEFAULT_CAP;
+  if(guess == null || !isFinite(guess) || guess <= 0) return 0;
+  const d = Math.abs(Math.log(guess) - Math.log(truth));
+  if(d >= cap) return 0;
+  return 1 - d / cap;
+}
+
+/* ---------------- Number parsing ---------------- */
+function parseNumber(raw){
+  if(raw == null) return NaN;
+  let s = String(raw).trim().toLowerCase();
+  if(s === '') return NaN;
+  s = s.replace(/,/g,'').replace(/\s+/g,'');
+  s = s.replace(/[x×·*]10\^?/g,'e');  // 1.76x10^12 -> 1.76e12
+  s = s.replace(/^10\^/,'1e');        // 10^12 -> 1e12
+  s = s.replace(/e\+/,'e');           // 1e+12 -> 1e12
+  return Number(s);
+}
+
+/* ---------------- Questions ----------------
+   Each: prompt, unit (label by the box; '' for dimensionless),
+   answer (number, in those units), answerDisplay, src{label,url}, note. */
+const QUESTIONS = [
+  {
+    prompt: "How many parameters did GPT-4 have, according to the widely-cited mid-2023 SemiAnalysis architecture leak?",
+    unit: "parameters",
+    answer: 1.76e12,
+    maxOOM: 5,   // semi-known leak; many recall "~1.8T" but confuse with active params
+    answerDisplay: "≈ 1.76 trillion (1.76×10¹²)",
+    src: {label:"SemiAnalysis leak, via The Decoder", url:"https://the-decoder.com/gpt-4-architecture-datasets-costs-and-more-leaked/"},
+    note: "Never officially confirmed. The leak describes a Mixture-of-Experts model: 16 experts of ~111B params each (~1.8T total), with ~280B parameters active per token."
+  },
+  {
+    prompt: "What is the maximum total context (input + output tokens) per request for GPT-5 via the OpenAI API, as announced at its August 2025 launch?",
+    unit: "tokens",
+    answer: 400000,
+    maxOOM: 3.5,     // context windows are common knowledge; range 128k–1M
+    answerDisplay: "400,000 tokens (272,000 input + 128,000 output)",
+    src: {label:"allthings.how — GPT-5 context window", url:"https://allthings.how/gpt-5-context-window-limits-and-usage-in-chatgpt-and-api/"},
+    note: "API caps total tokens at 400k (272k in / 128k out). The ChatGPT app exposes far less: ~8k (Free), 32k (Plus), 128k (Pro)."
+  },
+  {
+    prompt: "What was the 50%-task-completion time horizon of GPT-2, per METR's \"Measuring AI Ability to Complete Long Tasks\" (March 2025)?",
+    unit: "seconds",
+    answer: 2,
+    maxOOM: 5,     // METR-specific; easy to be off by 1–2 OOM if you haven't seen the chart
+    answerDisplay: "≈ 2 seconds",
+    src: {label:"METR — Measuring AI Ability to Complete Long Tasks", url:"https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/"},
+    note: "On METR's task suite, GPT-2 (2019) sits at ~2 s, vs o3 at ~110 min in the same paper."
+  },
+  {
+    prompt: "What was the 50%-task-completion time horizon of Claude 3.7 Sonnet, per METR's preliminary evaluation (Feb–Mar 2025)?",
+    unit: "minutes",
+    answer: 55,
+    maxOOM: 3,   // "about an hour" is widely known
+    answerDisplay: "≈ 55 minutes",
+    src: {label:"METR — Claude 3.7 Sonnet evaluation", url:"https://metr.org/evaluations/claude-3-7-report/"},
+    note: "Reported around 50–59 minutes depending on the task subset; ~55 min is the headline figure."
+  },
+  {
+    prompt: "What was the 50%-task-completion time horizon METR estimated for the Claude \"Mythos\" preview (March 2026)?",
+    unit: "hours",
+    answer: 16,
+    maxOOM: 4,     // recent and less known; truth itself is a wide CI
+    answerDisplay: "≥ 16 hours (95% CI ≈ 8.5–55 h)",
+    src: {label:"METR via OfficeChai", url:"https://officechai.com/ai/claude-mythos-shows-50-time-horizon-of-16-hours-on-metr-benchmark/"},
+    note: "METR flagged this as a lower bound — its task suite wasn't built for models this capable, so only a handful of >16 h tasks anchor the estimate."
+  },
+  {
+    prompt: "What is the doubling time of frontier AI's 50% task horizon over 2019–2025, per METR?",
+    unit: "months",
+    answer: 7,
+    maxOOM: 1.5,   // famous "~7 months"; doubling times should be near-exact
+    answerDisplay: "≈ 7 months",
+    src: {label:"METR — Measuring AI Ability to Complete Long Tasks", url:"https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/"},
+    note: "~7 months over the full 2019–2025 window; the 2024–2025 subset is faster (~4 months / ~109 days). The 80% horizon is ~5× shorter but trends similarly."
+  },
+  {
+    prompt: "What is the doubling time of GPU price-performance (FLOP/s per dollar), per Epoch AI's analysis of GPUs released 2006–2021?",
+    unit: "years",
+    answer: 2.5,
+    maxOOM: 1.5,   // doubling time; should be near-exact
+    answerDisplay: "≈ 2.5 years (2.46 yr; 95% CI 2.24–2.72)",
+    src: {label:"Epoch AI — Trends in GPU price-performance", url:"https://epoch.ai/blog/trends-in-gpu-price-performance"},
+    note: "≈ 30%/yr improvement. ML-relevant GPUs improve a bit faster (~2.1 yr); top GPUs a bit slower (~2.95 yr). Roughly Moore's-law pace."
+  },
+  {
+    prompt: "What is the doubling time of transistor count per chip (Moore's law), per Moore's own 1975 revision?",
+    unit: "years",
+    answer: 2,
+    maxOOM: 1.2,   // everyone knows Moore's law (~2 yr / 18 mo); strictest
+    answerDisplay: "≈ 2 years",
+    src: {label:"Our World in Data — Moore's Law", url:"https://ourworldindata.org/moores-law"},
+    note: "Moore's 1965 paper implied ~1-year doubling; he revised it to ~2 years in 1975. The popular '18 months' is a later paraphrase (often attributed to David House)."
+  },
+  {
+    prompt: "Take 2024 world primary energy production and divide it by the total solar power intercepted by Earth (the disc the planet presents to the Sun, before any atmospheric absorption/reflection). What is the ratio?",
+    unit: "(dimensionless)",
+    answer: 1.08e-4,
+    maxOOM: 6,     // multi-step compute over obscure magnitudes; most lenient
+    answerDisplay: "≈ 1.1×10⁻⁴",
+    src: {label:"Energy Institute Statistical Review (via Our World in Data)", url:"https://ourworldindata.org/grapher/global-primary-energy"},
+    note: "2024 primary energy ≈ 592 EJ ⇒ ~1.88×10¹³ W average. Solar interception = 1361 W/m² × π·R⊕² ≈ 1.74×10¹⁷ W. Ratio ≈ 1.08×10⁻⁴ (~0.011%)."
+  },
+  {
+    prompt: "How much did the pro-AI super PAC network \"Leading the Future\" (the super PAC plus affiliated groups) raise in the second half of 2025, per CNBC?",
+    unit: "USD",
+    answer: 125e6,
+    maxOOM: 5,     // recallable news, but $10M–$1B is a plausible spread
+    answerDisplay: "≈ $125 million",
+    src: {label:"CNBC — AI industry super PAC raises $125M", url:"https://www.cnbc.com/2026/01/30/ai-industry-super-pac-raises-campaign-money.html"},
+    note: "The Leading the Future super PAC itself reported ~$50.3M; the broader network (incl. nonprofit advocacy arms) totals ~$125M. Backers include a16z, Greg Brockman, Joe Lonsdale, Ron Conway."
+  },
+  {
+    prompt: "How much did Anthropic spend on U.S. federal lobbying in 2025, per OpenSecrets?",
+    unit: "USD",
+    answer: 3.13e6,
+    maxOOM: 5,     // obscure magnitude; $100k–$50M all feel plausible
+    answerDisplay: "≈ $3.13 million",
+    src: {label:"OpenSecrets — Anthropic lobbying profile", url:"https://www.opensecrets.org/federal-lobbying/clients/summary?cycle=2025&id=D000106114"},
+    note: "About a 4× jump year-over-year, among the fastest growth of any AI company."
+  },
+  {
+    prompt: "Per McKinsey, the projected capital investment in building out the global data-center value chain equals roughly what fraction of global GDP per year?",
+    unit: "(fraction)",
+    answer: 0.01,
+    maxOOM: 4,     // ballpark-able (0.1%–5%) but not common knowledge
+    answerDisplay: "≈ 0.01 (about 1.0% of global GDP/yr)",
+    src: {label:"McKinsey — The data center dividend", url:"https://www.mckinsey.com/featured-insights/week-in-charts/the-data-center-dividend"},
+    note: "$6.7T cumulative investment 2025–2030 ≈ ~1.0% of global GDP annually. Its measured contribution to GDP growth is smaller (~0.2% in 2025, Goldman Sachs) since much is imported hardware."
+  },
+  {
+    prompt: "Approximately how much compute (in FLOP) was used to train GPT-3, per Epoch AI's estimate?",
+    unit: "FLOP",
+    maxOOM: 5,
+    answer: 3.14e23,
+    answerDisplay: "≈ 3.1×10²³ FLOP",
+    src: {label:"Epoch AI — Notable AI models", url:"https://epoch.ai/data/notable-ai-models"},
+    note: "Epoch's estimate for the original 175B-parameter GPT-3 (2020). GPT-4 used roughly 50–70× more."
+  },
+  {
+    prompt: "Approximately how much compute (in FLOP) was used to train GPT-4, per Epoch AI's central estimate?",
+    unit: "FLOP",
+    maxOOM: 5,
+    answer: 2.1e25,
+    answerDisplay: "≈ 2×10²⁵ FLOP",
+    src: {label:"Epoch AI — Notable AI models", url:"https://epoch.ai/data/notable-ai-models"},
+    note: "Epoch's central estimate (~2×10²⁵); some lower-bound estimates are nearer 5×10²⁴. Over 30 models have now passed the 10²⁵ FLOP scale."
+  },
+  {
+    prompt: "By what factor per year has the training compute of frontier AI models grown over 2010–2024, per Epoch AI?",
+    unit: "× per year",
+    maxOOM: 2,
+    answer: 4.5,
+    answerDisplay: "≈ 4–5× per year",
+    src: {label:"Epoch AI — Training compute grows 4–5×/year", url:"https://epoch.ai/blog/training-compute-of-frontier-ai-models-grows-by-4-5x-per-year"},
+    note: "~4–5×/yr overall, ~5×/yr for frontier LLMs since 2020 — equivalent to a doubling roughly every 5–6 months."
+  },
+  {
+    prompt: "What was the amortized hardware + energy cost of GPT-4's final training run, per Epoch AI?",
+    unit: "USD",
+    maxOOM: 5,
+    answer: 40e6,
+    answerDisplay: "≈ $40 million",
+    src: {label:"Epoch AI — Cost to train frontier models", url:"https://epoch.ai/blog/how-much-does-it-cost-to-train-frontier-ai-models"},
+    note: "Amortized hardware+energy method. Buying the hardware outright would be ~$800M; cloud-rental estimates run ~2× the amortized figure. Costs rising ~2.4×/yr."
+  },
+  {
+    prompt: "What is the peak BF16/FP16 tensor-core throughput of an NVIDIA H100 (SXM), dense (no sparsity), in FLOP/s?",
+    unit: "FLOP/s",
+    maxOOM: 5,
+    answer: 9.89e14,
+    answerDisplay: "≈ 9.9×10¹⁴ FLOP/s (989 TFLOP/s)",
+    src: {label:"NVIDIA — H100 datasheet", url:"https://resources.nvidia.com/en-us-gpu-resources/h100-datasheet-24306"},
+    note: "Doubles to ~1979 TFLOP/s with structured sparsity. FP8 is ~2× BF16; FP64 is far lower (~67 TFLOP/s)."
+  },
+  {
+    prompt: "How much electricity did the world's data centres consume in 2024, per the IEA?",
+    unit: "J",
+    maxOOM: 4.5,
+    answer: 1.49e18,
+    answerDisplay: "≈ 1.5×10¹⁸ J (= 415 TWh; ~1.5% of world electricity)",
+    src: {label:"IEA — Energy and AI", url:"https://www.iea.org/reports/energy-and-ai/executive-summary"},
+    note: "Projected to roughly double to ~945 TWh by 2030. Of the 2024 total: US ~45%, China ~25%, Europe ~15%."
+  },
+  {
+    prompt: "What share of total U.S. electricity did data centers consume in 2023, per the Lawrence Berkeley National Laboratory report?",
+    unit: "%",
+    maxOOM: 3,
+    answer: 4.4,
+    answerDisplay: "≈ 4.4% (176 TWh)",
+    src: {label:"LBNL — 2024 U.S. Data Center Energy Usage Report", url:"https://eta.lbl.gov/publications/2024-lbnl-data-center-energy-usage-report"},
+    note: "Up from ~1.9% (58 TWh) in 2014; projected to reach 6.7–12% by 2028."
+  },
+  {
+    prompt: "What was GPT-4's 5-shot accuracy on the MMLU benchmark, per the GPT-4 Technical Report?",
+    unit: "%",
+    maxOOM: 1.5,
+    answer: 86.4,
+    answerDisplay: "86.4%",
+    src: {label:"OpenAI — GPT-4 Technical Report", url:"https://arxiv.org/abs/2303.08774"},
+    note: "vs ~70% for GPT-3.5. MMLU is a 57-subject multiple-choice exam."
+  },
+  {
+    prompt: "What did OpenAI's o3 score on the ARC-AGI-1 semi-private eval in the public-leaderboard-eligible (low-compute) configuration, per ARC Prize (Dec 2024)?",
+    unit: "%",
+    maxOOM: 1.8,
+    answer: 75.7,
+    answerDisplay: "75.7% (87.5% in a high-compute config)",
+    src: {label:"ARC Prize — o3 breakthrough", url:"https://arcprize.org/blog/oai-o3-pub-breakthrough"},
+    note: "GPT-4o scored ~5% on the same eval in 2024. The 87.5% run used ~172× more compute and wasn't leaderboard-eligible."
+  },
+  {
+    prompt: "On approximately how many tokens was Llama 3.1 405B pretrained, per Meta?",
+    unit: "tokens",
+    maxOOM: 4,
+    answer: 15e12,
+    answerDisplay: "≈ 15 trillion tokens",
+    src: {label:"Meta — Introducing Llama 3.1", url:"https://ai.meta.com/blog/meta-llama-3-1/"},
+    note: "Trained on >16,000 H100 GPUs; a dense (non-MoE) decoder-only transformer."
+  },
+  {
+    prompt: "Under the EU AI Act, the maximum fine for using a prohibited AI system is the greater of €35M or what percentage of a company's total worldwide annual turnover?",
+    unit: "%",
+    maxOOM: 2.5,
+    answer: 7,
+    answerDisplay: "7% of global annual turnover",
+    src: {label:"EU AI Act — Article 99 (Penalties)", url:"https://artificialintelligenceact.eu/article/99/"},
+    note: "Higher than GDPR's 4% ceiling. Lower tiers apply elsewhere (≤3% for most obligations, ≤1% for supplying incorrect information)."
+  },
+  {
+    prompt: "What was OpenAI's approximate annualized revenue run-rate by the end of 2025, per reporting?",
+    unit: "USD",
+    maxOOM: 4,
+    answer: 20e9,
+    answerDisplay: "≈ $20 billion/yr run-rate",
+    src: {label:"MLQ.ai (reporting)", url:"https://mlq.ai/news/openai-achieves-over-20-billion-annual-revenue-run-rate-amid-explosive-growth/"},
+    note: "Up from a ~$10B run-rate in mid-2025; reportedly reached ~$25B by early 2026."
+  },
+  {
+    prompt: "What was Anthropic's post-money valuation in its September 2025 Series F round?",
+    unit: "USD",
+    maxOOM: 4,
+    answer: 183e9,
+    answerDisplay: "$183 billion (Series F)",
+    src: {label:"Anthropic — Series F announcement", url:"https://www.anthropic.com/news/anthropic-raises-series-f-at-usd183b-post-money-valuation"},
+    note: "$13B raised, led by ICONIQ. A later 2026 Series G reportedly valued the company at ~$380B."
+  },
+  {
+    prompt: "What is Microsoft's total committed investment in OpenAI (cumulative, as of 2025)?",
+    unit: "USD",
+    maxOOM: 3.5,
+    answer: 13e9,
+    answerDisplay: "≈ $13 billion",
+    src: {label:"CNBC (Microsoft 10-Q reporting)", url:"https://www.cnbc.com/2025/10/29/microsoft-open-ai-investment-earnings.html"},
+    note: "~$11.6B funded as of Sept 2025. Separate from the $100B+ Microsoft has spent on the broader partnership including infrastructure."
+  },
+  {
+    prompt: "What is the headline planned investment in the Stargate Project, announced in January 2025?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 500e9,
+    answerDisplay: "$500 billion (over ~4 years)",
+    src: {label:"OpenAI — Announcing the Stargate Project", url:"https://openai.com/index/announcing-the-stargate-project/"},
+    note: "$100B to deploy immediately. Backers: SoftBank, OpenAI, Oracle, MGX."
+  },
+  {
+    prompt: "Approximately how many weekly active users did ChatGPT have by the end of 2025, per OpenAI?",
+    unit: "users",
+    maxOOM: 3,
+    answer: 800e6,
+    answerDisplay: "≈ 800 million weekly active users",
+    src: {label:"Nerdynav (reporting OpenAI figures)", url:"https://nerdynav.com/chatgpt-statistics/"},
+    note: "Up from ~300M in late 2024; reportedly crossed ~900M by early 2026."
+  },
+  {
+    prompt: "At its peak (1944), roughly how many people did the Manhattan Project employ?",
+    unit: "people",
+    maxOOM: 4,
+    answer: 130000,
+    answerDisplay: "≈ 130,000 at peak (500,000+ over the whole project)",
+    src: {label:"Wikipedia — Manhattan Project", url:"https://en.wikipedia.org/wiki/Manhattan_Project"},
+    note: "~129,000 in June 1944, mostly construction workers and plant operators (only ~1,800 military). Turnover meant 500,000+ worked on it overall."
+  },
+  {
+    prompt: "What did the Manhattan Project cost in total, in then-year (1945) US dollars?",
+    unit: "USD (1945)",
+    maxOOM: 4,
+    answer: 2e9,
+    answerDisplay: "≈ $2 billion (1945) — roughly $25–38 billion today",
+    src: {label:"Wikipedia — Manhattan Project", url:"https://en.wikipedia.org/wiki/Manhattan_Project"},
+    note: "~$2.2B by war's end. The vast majority went to building uranium/plutonium production facilities, not the bombs themselves."
+  },
+  {
+    prompt: "What was the total cost of NASA's Apollo program in inflation-adjusted (present-day) US dollars?",
+    unit: "USD (2020$)",
+    maxOOM: 4.5,
+    answer: 260e9,
+    answerDisplay: "≈ $260 billion in 2020 dollars ($25.8B in then-year dollars)",
+    src: {label:"The Planetary Society — Cost of Apollo", url:"https://www.planetary.org/space-policy/cost-of-apollo"},
+    note: "The largest peacetime R&D project of its era; more than half of NASA's spending in the 1960s."
+  },
+  {
+    prompt: "At its peak (1967), roughly how many people worked on the Apollo program (NASA plus contractors)?",
+    unit: "people",
+    maxOOM: 3.5,
+    answer: 400000,
+    answerDisplay: "≈ 400,000",
+    src: {label:"The Planetary Society — Cost of Apollo", url:"https://www.planetary.org/space-policy/cost-of-apollo"},
+    note: "Spread across 20,000+ companies and universities."
+  },
+  {
+    prompt: "Roughly how many people (military + civilian) died in World War II, per modern estimates?",
+    unit: "deaths",
+    maxOOM: 3,
+    answer: 77e6,
+    answerDisplay: "≈ 70–85 million (~3% of the world's population)",
+    src: {label:"Wikipedia — World War II casualties", url:"https://en.wikipedia.org/wiki/World_War_II_casualties"},
+    note: "Roughly 25M military + 52M civilian (including ~20M from war-related famine and disease). The USSR and China lost the most."
+  },
+  {
+    prompt: "What is a common estimate of the total direct economic cost of World War II, in then-year US dollars?",
+    unit: "USD",
+    maxOOM: 6,
+    answer: 1.6e12,
+    answerDisplay: "≈ $1.6 trillion (then-year dollars)",
+    src: {label:"Britannica — World War II, Costs of the war", url:"https://www.britannica.com/event/World-War-II/Costs-of-the-war"},
+    note: "Estimates vary enormously (often quoted as >$1 trillion then-dollars, several trillion adjusted) given the scale of destroyed economies."
+  },
+  {
+    prompt: "Approximately how many nuclear warheads existed worldwide (total inventory) as of early 2025, per SIPRI?",
+    unit: "warheads",
+    maxOOM: 3,
+    answer: 12241,
+    answerDisplay: "≈ 12,200 (about 9,600 in military stockpiles)",
+    src: {label:"SIPRI — World nuclear forces 2025", url:"https://www.sipri.org/yearbook/2025/06"},
+    note: "Russia and the US hold ~90%. Far below the Cold-War peak, but the decline has largely stalled."
+  },
+  {
+    prompt: "Roughly how many nuclear warheads existed worldwide at the Cold-War peak (around 1986)?",
+    unit: "warheads",
+    maxOOM: 4,
+    answer: 64000,
+    answerDisplay: "≈ 64,000 (estimates ~64,000–70,000)",
+    src: {label:"Our World in Data — Nuclear weapons", url:"https://ourworldindata.org/nuclear-weapons"},
+    note: "The Soviet stockpile peaked around 1986; global inventories then fell more than 80% by the 2010s."
+  },
+  {
+    prompt: "What was total world military spending in 2024, per SIPRI?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 2.71e12,
+    answerDisplay: "≈ $2.7 trillion",
+    src: {label:"SIPRI — Trends in World Military Expenditure 2024", url:"https://www.sipri.org/publications/2025/sipri-fact-sheets/trends-world-military-expenditure-2024"},
+    note: "Up 9.4% — the steepest rise since 1988 — and about 2.5% of world GDP."
+  },
+  {
+    prompt: "How many states are parties to the Nuclear Non-Proliferation Treaty (NPT)?",
+    unit: "states",
+    maxOOM: 1.2,
+    answer: 191,
+    answerDisplay: "191 states",
+    src: {label:"UN Office for Disarmament Affairs — NPT", url:"https://disarmament.unoda.org/en/our-work/weapons-mass-destruction/nuclear-weapons/treaty-non-proliferation-nuclear-weapons"},
+    note: "One of the most widely adhered-to arms treaties. Non-parties include India, Pakistan, and Israel; North Korea announced withdrawal."
+  },
+  {
+    prompt: "How much was U.S. private investment in AI in 2024, per the Stanford AI Index 2025?",
+    unit: "USD",
+    maxOOM: 4,
+    answer: 109e9,
+    answerDisplay: "≈ $109 billion",
+    src: {label:"Stanford HAI — 2025 AI Index (Economy)", url:"https://hai.stanford.edu/ai-index/2025-ai-index-report/economy"},
+    note: "~12× China's $9.3B. Total global corporate AI investment was ~$252B; generative-AI private investment ~$34B."
+  },
+  {
+    prompt: "What was NVIDIA's data-center segment revenue for fiscal year 2025?",
+    unit: "USD",
+    maxOOM: 4,
+    answer: 115e9,
+    answerDisplay: "≈ $115 billion (+142% YoY)",
+    src: {label:"NVIDIA — FY2025 results", url:"https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2025"},
+    note: "The data-center segment is now the overwhelming majority of NVIDIA's revenue."
+  },
+  {
+    prompt: "How many NVIDIA H100 GPUs did xAI's \"Colossus\" cluster contain when first brought online in 2024?",
+    unit: "GPUs",
+    maxOOM: 2.5,
+    answer: 100000,
+    answerDisplay: "100,000 H100 GPUs",
+    src: {label:"xAI — Colossus", url:"https://x.ai/colossus"},
+    note: "Built in 122 days, then doubled to ~200,000; expanding toward 1M (≈550k+ GPUs by early 2026)."
+  },
+  {
+    prompt: "Approximately how many synapses are in an adult human brain (order-of-magnitude estimate)?",
+    unit: "synapses",
+    maxOOM: 5,
+    answer: 1e14,
+    answerDisplay: "≈ 10¹⁴ (100 trillion; estimates 10¹⁴–10¹⁵)",
+    src: {label:"AI Impacts — Scale of the human brain", url:"https://aiimpacts.org/scale-of-the-human-brain/"},
+    note: "~86 billion neurons × ~1,000 synapses each. This is sometimes compared to AI parameter counts; one could hypothesize that we will get to AGI at around this many parameters."
+  },
+  {
+    prompt: "What is the commonly cited total cost to develop and build the International Space Station (all partners)?",
+    unit: "USD",
+    maxOOM: 3.5,
+    answer: 150e9,
+    answerDisplay: "≈ $150 billion",
+    src: {label:"Wikipedia — International Space Station programme", url:"https://en.wikipedia.org/wiki/International_Space_Station_programme"},
+    note: "Often called the most expensive single object ever built; ~$4B/yr to operate."
+  },
+  {
+    prompt: "In Ajeya Cotra's 2020 \"Bio Anchors\" report, the median estimate for transformative AI was roughly how many years after publication (i.e., counting from 2020)?",
+    unit: "years",
+    maxOOM: 2,
+    answer: 30,
+    answerDisplay: "≈ 30 years (median ~2050)",
+    src: {label:"Epoch AI — Grokking Bio Anchors", url:"https://epoch.ai/blog/grokking-bioanchors"},
+    note: "P(TAI) ≈ 8% by 2030, ~47% by 2050, ~78% by 2100. Cotra later (2022) updated her median earlier, to roughly 2040."
+  },
+  {
+    prompt: "What is the best-guess estimate for the human brain's computation rate (in FLOP/s) used in the Bio Anchors / Open Philanthropy brain report?",
+    unit: "FLOP/s",
+    maxOOM: 6,
+    answer: 1e15,
+    answerDisplay: "≈ 10¹⁵ FLOP/s (range ~10¹³–10¹⁷)",
+    src: {label:"Open Philanthropy — Computational power to match the human brain", url:"https://www.openphilanthropy.org/research/how-much-computational-power-does-it-take-to-match-the-human-brain/"},
+    note: "Joe Carlsmith's central estimate. The neural-network and genome anchors are built on this brain FLOP/s figure."
+  },
+  {
+    prompt: "In Bio Anchors, what is the median compute (in FLOP) to train transformative AI under the \"evolution anchor\" — i.e. the total computation performed by the nervous systems of all animals over evolutionary history, since the first neurons?",
+    unit: "FLOP",
+    maxOOM: 6,
+    answer: 1e41,
+    answerDisplay: "≈ 10⁴¹ FLOP",
+    src: {label:"Epoch AI — Grokking Bio Anchors", url:"https://epoch.ai/blog/grokking-bioanchors"},
+    note: "Assumes ~10²¹ ancestor brains alive at any time, each ~nematode-level. About 17 OOM above GPT-4-scale training. Given 10% weight in the report."
+  },
+  {
+    prompt: "Roughly how much total computation (in FLOP) does a human brain perform over a ~30-year lifetime — i.e. brain FLOP/s × seconds lived (the raw figure underlying Bio Anchors' 'lifetime anchor')?",
+    unit: "FLOP",
+    maxOOM: 4,
+    answer: 1e24,
+    answerDisplay: "≈ 10²⁴ FLOP (~10¹⁵ FLOP/s × ~10⁹ s)",
+    src: {label:"Epoch AI — Grokking Bio Anchors", url:"https://epoch.ai/blog/grokking-bioanchors"},
+    note: "Cotra's Bio Anchors 'lifetime anchor' starts from this raw ~10²⁴ figure but shifts its median up to ~10²⁸ FLOP — arguing the raw number seems implausibly low (it would imply ~AlphaStar-level compute might suffice for TAI) and that ML learning is far less compute-efficient than human learning."
+  },
+  {
+    prompt: "In the AI 2027 takeoff forecast, what is the estimated AI R&D progress multiplier once a \"superhuman coder\" is reached?",
+    unit: "× speedup",
+    maxOOM: 2.5,
+    answer: 5,
+    answerDisplay: "≈ 5×",
+    src: {label:"AI 2027 — Takeoff Forecast", url:"https://ai-2027.com/research/takeoff-forecast"},
+    note: "Algorithmic progress ~5× faster than with humans alone. The multiplier climbs steeply at later milestones."
+  },
+  {
+    prompt: "In the AI 2027 takeoff forecast, what is the estimated AI R&D progress multiplier at the \"superhuman AI researcher\" (SAR) milestone?",
+    unit: "× speedup",
+    maxOOM: 3,
+    answer: 25,
+    answerDisplay: "≈ 25×",
+    src: {label:"AI 2027 — Takeoff Forecast", url:"https://ai-2027.com/research/takeoff-forecast"},
+    note: "An AI that does the best human AI researcher's job, but faster and in many parallel copies."
+  },
+  {
+    prompt: "In the AI 2027 takeoff forecast, what is the estimated AI R&D progress multiplier at the \"superintelligent AI researcher\" (SIAR) milestone?",
+    unit: "× speedup",
+    maxOOM: 3.5,
+    answer: 250,
+    answerDisplay: "≈ 250×",
+    src: {label:"AI 2027 — Takeoff Forecast", url:"https://ai-2027.com/research/takeoff-forecast"},
+    note: "Vastly beyond the best humans. The final ASI milestone is estimated at roughly 2,000×."
+  },
+  {
+    prompt: "In a 2025 post, roughly what multiplier did Ryan Greenblatt estimate AI tools are currently speeding up AI R&D by?",
+    unit: "× speedup",
+    maxOOM: 1.5,
+    answer: 1.5,
+    answerDisplay: "≈ 1.5× (he's floated ~1.5–2×)",
+    src: {label:"Ryan Greenblatt (Redwood) — My picture of the present in AI", url:"https://blog.redwoodresearch.org/p/my-picture-of-the-present-in-ai"},
+    note: "He notes a 4× speedup on research tasks translates to far less overall (~1.75×), since compute also bottlenecks progress."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028' (May 2025), roughly how much compute (BF16 FLOP) was used to pretrain the 2024 frontier models such as Grok 3 and GPT-4.5 (on ~100K H100s)?",
+    unit: "FLOP",
+    maxOOM: 3.5,
+    answer: 3e26,
+    answerDisplay: "≈ 3×10²⁶ BF16 FLOP (~2× more in FP8)",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "~100K H100s at ~1e15 BF16 FLOP/s each (~1e20 FLOP/s total), ~40% utilization, ~3.5-month run. For comparison, GPT-4 (2022) was ~2e25 on ~24K A100s."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', roughly how many Blackwell chips will the 2026 Abilene (Stargate/OpenAI) site hold?",
+    unit: "chips",
+    maxOOM: 2.5,
+    answer: 450000,
+    answerDisplay: "≈ 400,000–500,000 Blackwell chips",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "In GB200 NVL72 racks, ~2.5e15 BF16 FLOP/s per 2-die package, ~1.1e21 FLOP/s total."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', the 2026 Abilene (Stargate) site will have enough compute to pretrain a model of roughly how many BF16 FLOP?",
+    unit: "FLOP",
+    maxOOM: 3.5,
+    answer: 4e27,
+    answerDisplay: "≈ 4×10²⁷ BF16 FLOP",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "Roughly 150× GPT-4's training compute, ~4 years later. The compute alone costs ~$22–28bn to build (~$4M per NVL72 rack)."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', what is the projected build cost of an on-trend frontier training system in 2028?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 140e9,
+    answerDisplay: "≈ $140 billion",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "Extrapolating ~2.35×/yr cost growth. The on-trend 2030 figure (~$770bn) is likely infeasible without a transformative AI payoff first."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', a $140bn 2028 training system could pretrain a model of roughly how many BF16 FLOP?",
+    unit: "FLOP",
+    maxOOM: 3.5,
+    answer: 5e28,
+    answerDisplay: "≈ 5×10²⁸ BF16 FLOP",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "About 2,000× the 2022 GPT-4 scale. Nesov argues funding can't sustain this pace past ~2029, so matching it again would take until ~2050 on price-performance gains alone."
+  },
+  {
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028' (citing SemiAnalysis), roughly what did a ~100,000-H100 training system cost to build, all-in?",
+    unit: "USD",
+    maxOOM: 2.5,
+    answer: 4.5e9,
+    answerDisplay: "≈ $4–5 billion (~$45K per chip, all-in)",
+    src: {label:"Vladimir Nesov — Slowdown After 2028 (LessWrong)", url:"https://www.lesswrong.com/posts/XiMRyQcEyKCryST8T/slowdown-after-2028-compute-rlvr-uncertainty-moe-data-wall"},
+    note: "The class of system used for the 2024 frontier runs (Grok 3, GPT-4.5)."
+  },
+  {
+    prompt: "In MIRI's Technical Governance Team draft international AI agreement (Nov 2025), above how many training FLOP is a training run outright prohibited (the 'Strict Threshold')?",
+    unit: "FLOP",
+    maxOOM: 3.5,
+    answer: 1e24,
+    answerDisplay: "10²⁴ FLOP (the 'Strict Threshold')",
+    src: {label:"MIRI Technical Governance Team — An International Agreement to Prevent the Premature Creation of ASI", url:"https://techgov.intelligence.org/research/an-international-agreement-to-prevent-the-premature-creation-of-artificial-superintelligence"},
+    note: "Roughly a million dollars of compute, and a bit below near-frontier models like DeepSeek-R1 (~4×10²⁴) and gpt-oss-120B (~5×10²⁴). Post-training is separately capped at 10²³ FLOP."
+  },
+  {
+    prompt: "In MIRI's draft international AI agreement, above how many training FLOP must a run be declared, pre-approved, and monitored (the 'Monitored Threshold')?",
+    unit: "FLOP",
+    maxOOM: 3.5,
+    answer: 1e22,
+    answerDisplay: "10²² FLOP (the 'Monitored Threshold')",
+    src: {label:"MIRI Technical Governance Team — An International Agreement to Prevent the Premature Creation of ASI", url:"https://techgov.intelligence.org/research/an-international-agreement-to-prevent-the-premature-creation-of-artificial-superintelligence"},
+    note: "Runs between 10²² and 10²⁴ FLOP are permitted but watched (with a 'whitelist' barring post-agreement algorithmic innovations). Set high enough that ordinary computing won't trip it."
+  },
+  {
+    prompt: "In MIRI's draft international AI agreement, compute clusters above how many H100-equivalent GPUs would require registration and monitoring?",
+    unit: "H100-equivalents",
+    maxOOM: 3.5,
+    answer: 16,
+    answerDisplay: "16 H100-equivalents",
+    src: {label:"MIRI Technical Governance Team — An International Agreement to Prevent the Premature Creation of ASI", url:"https://techgov.intelligence.org/research/an-international-agreement-to-prevent-the-premature-creation-of-artificial-superintelligence"},
+    note: "Deliberately conservative. MIRI notes that reaching the 10²⁴ FLOP Strict Threshold with just 16 H100s would take ~730 days, so such a run would likely be detectable."
+  },
+  {
+    prompt: "Per Seth Lloyd's 'Computational Capacity of the Universe' (2002), at most how many elementary logical operations could the observable universe have performed over its entire history?",
+    unit: "operations",
+    maxOOM: 10,
+    answer: 1e120,
+    answerDisplay: "≈ 10¹²⁰ operations (on ~10⁹⁰ bits)",
+    src: {label:"Seth Lloyd — Computational Capacity of the Universe (PRL 2002)", url:"https://arxiv.org/abs/quant-ph/0110141"},
+    note: "Follows from the Margolus–Levitin theorem (ops/sec ≤ 2E/πℏ) times the age of the universe. With gravitational degrees of freedom the bit count also rises to ~10¹²⁰. Often cited as the ultimate physical limit on computation. (Scoring cap is wide here, since meaningful uncertainty for a number this size is many orders of magnitude.)"
+  },
+  {
+    prompt: "Per Epoch AI's 'Algorithmic progress in language models' (2024), the compute needed to reach a fixed language-model performance level has halved roughly every how many months?",
+    unit: "months",
+    maxOOM: 1.8,
+    answer: 8,
+    answerDisplay: "≈ 8 months (95% CI 5–14)",
+    src: {label:"Epoch AI — Algorithmic progress in language models", url:"https://epoch.ai/blog/algorithmic-progress-in-language-models"},
+    note: "Faster than Moore's law's ~2-year doubling. For scale, the Transformer itself was worth ~2 years of this algorithmic progress; Chinchilla scaling laws ~8–16 months."
+  },
+  {
+    prompt: "Per Epoch AI's 'Algorithmic progress in computer vision' (Erdil & Besiroglu, 2022), ImageNet progress decomposes into compute, better algorithms, and data — roughly what fraction came from scaling data (the smallest of the three)?",
+    unit: "(fraction)",
+    maxOOM: 1.8,
+    answer: 0.1,
+    answerDisplay: "≈ 0.10 — the Shapley split is roughly 45% compute / 45% algorithms / 10% data",
+    src: {label:"Epoch AI / Erdil & Besiroglu — Algorithmic progress in computer vision", url:"https://arxiv.org/abs/2212.05153"},
+    note: "The clean three-way split for image classification: compute and algorithms each ~45%, data ~10% (often misremembered as ~40/40/20). For language models, Epoch's later analysis lumps compute+data together (60–95%) with algorithms only 5–40%."
+  },
+  {
+    prompt: "Roughly how many AI publications were produced worldwide in 2023 (all venues), per the Stanford AI Index?",
+    unit: "papers",
+    maxOOM: 2,
+    answer: 242000,
+    answerDisplay: "≈ 242,000 (up from ~102,000 in 2013)",
+    src: {label:"Stanford HAI — 2025 AI Index (Research & Development)", url:"https://hai.stanford.edu/ai-index/2025-ai-index-report/research-and-development"},
+    note: "Roughly tripled over the decade. China produced the largest single-country share (~23%)."
+  },
+  {
+    prompt: "How many papers were submitted to NeurIPS 2024 (the largest ML conference)?",
+    unit: "submissions",
+    maxOOM: 2,
+    answer: 17491,
+    answerDisplay: "≈ 17,500 (15,671 main track + 1,820 datasets/benchmarks)",
+    src: {label:"NeurIPS 2024 Fact Sheet", url:"https://media.neurips.cc/Conferences/NeurIPS2024/NeurIPS2024-Fact_Sheet.pdf"},
+    note: "A rough proxy for the size of the active ML research community; submissions have grown roughly 10× over the past decade."
+  },
+  {
+    prompt: "What is the current (2026) frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the Redwood/MATS no-CoT time-horizons paper (frontier model GPT-5.5)?",
+    unit: "minutes",
+    maxOOM: 3,
+    answer: 3,
+    answerDisplay: "≈ 3 minutes (GPT-5.5; reasoning-token horizon ~1,500 o3-mini tokens)",
+    src: {label:"Woodruff, Ward et al. — Estimating No-CoT Time Horizons of Frontier AI Models (LessWrong)", url:"https://www.lesswrong.com/posts/SieLowPgNgRSPGhFw/estimating-no-cot-task-completion-time-horizons-of-frontier"},
+    note: "How much a model can 'think' invisibly with no externalized CoT. It doubles only ~every 373 days (~1 yr) — about half the speed of METR's with-CoT horizons (~182-day doubling) — so most gains since GPT-4 have come from externalized reasoning. Projected ~7 min by 2028, ~25 min by 2030. A lower bound on reasoning a CoT monitor can't see."
+  },
+  {
+    prompt: "Google Books has scanned ~40 million of the ~130 million books ever published (~30% of them). Roughly how many text tokens does the Google Books corpus contain?",
+    unit: "tokens",
+    maxOOM: 3.5,
+    answer: 5e12,
+    answerDisplay: "≈ 5×10¹² tokens (~40M books × ~90k words × ~1.3 tok/word)",
+    src: {label:"Wikipedia — Google Books (40M scanned; ~130M ever published)", url:"https://en.wikipedia.org/wiki/Google_Books"},
+    note: "Implies all ~130M books ever published hold only ~1.5×10¹³ tokens — about one frontier pretraining run (Llama 3 used ~15T tokens). The whole written-book heritage of humanity ≈ a single training set."
+  },
+  {
+    prompt: "Roughly how many words does a typical human hear and read over an entire lifetime?",
+    unit: "words",
+    maxOOM: 3,
+    answer: 1e9,
+    answerDisplay: "≈ 10⁹ (a billion); a 13-year-old has heard ~100M (the BabyLM budget)",
+    src: {label:"BabyLM Challenge (children hear <100M words by age 13)", url:"https://babylm.github.io/"},
+    note: "Children hear ~2–7M words/yr (~100M by age 13); across ~80 years of speech + reading, ~10⁸–10⁹. Frontier LLMs train on ~10¹³ tokens — 4–5 orders of magnitude more, despite humans learning language far more sample-efficiently."
+  },
+  {
+    prompt: "Over roughly 2023–2025, what has been the approximate doubling time of Anthropic's annualized revenue?",
+    unit: "months",
+    maxOOM: 2,
+    answer: 4,
+    answerDisplay: "≈ 4 months (≈ 8–10× per year)",
+    src: {label:"Epoch AI — Anthropic vs OpenAI revenue", url:"https://epoch.ai/data-insights/anthropic-openai-revenue"},
+    note: "ARR ran ~$100M (2023) → ~$1B (Dec 2024) → ~$9B (end 2025) → ~$30B+ (2026). Epoch puts it at ~10×/yr since $1B (≈3.6-month doubling); a touch slower (~7×/yr) since mid-2025."
+  },
+  {
+    prompt: "As of mid-2026, NVIDIA's market capitalization is roughly what fraction of total global household wealth (~$470 trillion, per UBS)?",
+    unit: "(fraction)",
+    maxOOM: 2.5,
+    answer: 0.01,
+    answerDisplay: "≈ 0.01 (~1%): NVIDIA ~$4.8T ÷ ~$470T",
+    src: {label:"UBS Global Wealth Report 2025 (~$471T) + NVIDIA market cap", url:"https://www.ubs.com/global/en/media/display-page-ndp/en-20250618-gwr-2025.html"},
+    note: "NVIDIA became the world's most valuable company at ~$4.8–5.0T in mid-2026. It was ~0.5% of global wealth when worth ~$2.5T — the share roughly doubled as its market cap did."
+  }
+];
+
+/* ---------------- State + DOM ---------------- */
+const $ = id => document.getElementById(id);
+let order = [], idx = 0, results = [], total = 0, timeLimit = 120, tHandle = null, remaining = 0, answered = false;
+
+$("qcount").textContent = QUESTIONS.length + " in the set";
+$("numqMax").textContent = "of " + QUESTIONS.length;
+$("numq").max = QUESTIONS.length;
+$("numq").value = Math.min(10, QUESTIONS.length);
+
+function updateRunningAvg(){
+  $("runningAvg").textContent = results.length ? (total/results.length).toFixed(2) : "—";
+}
+
+function show(sec){ ["start","quiz","reveal","end"].forEach(s=>$(s).classList.toggle("hidden", s!==sec)); }
+
+function fmt(n){
+  if(n === 0) return "0";
+  const a = Math.abs(n);
+  if(a !== 0 && (a < 1e-3 || a >= 1e6)) return n.toExponential(2);
+  return (Math.round(n*1000)/1000).toLocaleString();
+}
+function fmtClock(s){
+  const m = Math.floor(s/60), ss = String(Math.floor(s%60)).padStart(2,"0");
+  return m + ":" + ss;
+}
+
+/* ---------------- Flow ---------------- */
+$("startBtn").onclick = () => {
+  timeLimit = Math.max(0, parseFloat($("mins").value)||0) * 60;
+  // always randomize the full set, then take the requested number
+  order = QUESTIONS.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  let n = Math.round(parseFloat($("numq").value) || QUESTIONS.length);
+  n = Math.max(1, Math.min(QUESTIONS.length, n));
+  order = order.slice(0, n);
+  idx = 0; results = []; total = 0;
+  updateRunningAvg();
+  loadQuestion();
+};
+
+function loadQuestion(){
+  answered = false;
+  const q = QUESTIONS[order[idx]];
+  $("progress").textContent = `Q ${idx+1} of ${order.length}`;
+  $("prompt").textContent = q.prompt;
+  $("unit").textContent = q.unit || "";
+  $("answer").value = "";
+  $("submitBtn").disabled = false;
+  show("quiz");
+  $("answer").focus();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(tHandle);
+  const t = $("timer");
+  if(timeLimit <= 0){ t.textContent = "∞"; t.className="timer"; return; }
+  remaining = timeLimit;
+  tick();
+  tHandle = setInterval(tick, 250);
+  function tick(){
+    const t2 = $("timer");
+    t2.textContent = fmtClock(remaining);
+    t2.className = "timer" + (remaining<=10?" crit":remaining<=30?" warn":"");
+    if(remaining <= 0){ clearInterval(tHandle); grade(true); return; }
+    remaining -= 0.25;
+  }
+}
+
+$("answer").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); grade(false); } });
+$("submitBtn").onclick = () => grade(false);
+$("skipBtn").onclick = () => { $("answer").value=""; grade(false); };
+
+function grade(timedOut){
+  if(answered) return;
+  answered = true;
+  clearInterval(tHandle);
+  $("submitBtn").disabled = true;
+  const q = QUESTIONS[order[idx]];
+  const raw = $("answer").value;
+  const guess = parseNumber(raw);
+  const valid = isFinite(guess) && guess > 0;
+  const cap = q.maxOOM || DEFAULT_CAP;
+  const s = scoreFor(valid ? guess : NaN, q.answer, cap);
+  total += s;
+  results.push({q, raw, guess: valid?guess:null, score:s});
+  updateRunningAvg();
+
+  // reveal
+  const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
+  const dist = valid ? Math.abs(Math.log(guess)-Math.log(q.answer)) : null;
+  $("rTitle").textContent = timedOut ? "Time's up" : "Result";
+  $("rScore").textContent = s.toFixed(2);
+  $("rScore").style.color = s>=0.66?"var(--good)":s>=0.33?"var(--mid)":"var(--bad)";
+  $("rBar").style.width = (s*100).toFixed(0)+"%";
+  $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
+  $("rTrue").textContent = q.answerDisplay;
+  $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
+  $("rDist").textContent = (valid ? dist.toFixed(2) : "—") + " / cap " + cap;
+  $("rNote").textContent = q.note || "";
+  $("rSrc").textContent = q.src.label;
+  $("rSrc").href = q.src.url;
+  show("reveal");
+  // Defer focus so the Enter keystroke that submitted can't also trigger "Next".
+  setTimeout(()=>$("nextBtn").focus(), 0);
+}
+
+$("nextBtn").onclick = () => {
+  idx++;
+  if(idx >= order.length) showEnd(); else loadQuestion();
+};
+
+function finishGame(){ clearInterval(tHandle); showEnd(); }
+$("finishBtn").onclick = finishGame;
+$("finishBtn2").onclick = finishGame;
+
+function showEnd(){
+  const n = results.length;
+  $("eAvg").textContent = n ? (total/n).toFixed(2) : "—";
+  $("eCount").textContent = n;
+  $("eTotal").textContent = total.toFixed(2);
+  const tb = $("eTable").querySelector("tbody");
+  tb.innerHTML = "";
+  results.forEach((r,i)=>{
+    const tr = document.createElement("tr");
+    const short = r.q.prompt.length>70 ? r.q.prompt.slice(0,68)+"…" : r.q.prompt;
+    tr.innerHTML = `<td>${i+1}</td><td>${short}</td>
+      <td class="num">${r.guess!=null?fmt(r.guess):"—"}</td>
+      <td class="num">${fmt(r.q.answer)}</td>
+      <td class="num" style="color:${r.score>=0.66?'var(--good)':r.score>=0.33?'var(--mid)':'var(--bad)'}">${r.score.toFixed(2)}</td>`;
+    tb.appendChild(tr);
+  });
+  show("end");
+}
+
+$("restartBtn").onclick = () => show("start");
+</script>
+</body>
+</html>
