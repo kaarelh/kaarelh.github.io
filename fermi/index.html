@@ -220,46 +220,46 @@ const QUESTIONS = [
   },
   {
     prompt: "What was the 50%-task-completion time horizon of Claude 3.7 Sonnet, per METR's preliminary evaluation (Feb–Mar 2025)?",
-    unit: "minutes",
-    answer: 55,
+    unit: "seconds",
+    answer: 3300,
     maxOOM: 3,   // "about an hour" is widely known
-    answerDisplay: "≈ 55 minutes",
+    answerDisplay: "≈ 3,300 s (55 minutes)",
     src: {label:"METR — Claude 3.7 Sonnet evaluation", url:"https://metr.org/evaluations/claude-3-7-report/"},
     note: "Reported around 50–59 minutes depending on the task subset; ~55 min is the headline figure."
   },
   {
     prompt: "What was the 50%-task-completion time horizon METR estimated for the Claude \"Mythos\" preview (March 2026)?",
-    unit: "hours",
-    answer: 16,
+    unit: "seconds",
+    answer: 57600,
     maxOOM: 4,     // recent and less known; truth itself is a wide CI
-    answerDisplay: "≥ 16 hours (95% CI ≈ 8.5–55 h)",
+    answerDisplay: "≈ 57,600 s (16 hours; 95% CI ≈ 8.5–55 h)",
     src: {label:"METR via OfficeChai", url:"https://officechai.com/ai/claude-mythos-shows-50-time-horizon-of-16-hours-on-metr-benchmark/"},
     note: "METR flagged this as a lower bound — its task suite wasn't built for models this capable, so only a handful of >16 h tasks anchor the estimate."
   },
   {
     prompt: "What is the doubling time of frontier AI's 50% task horizon over 2019–2025, per METR?",
-    unit: "months",
-    answer: 7,
+    unit: "seconds",
+    answer: 18400000,
     maxOOM: 1.5,   // famous "~7 months"; doubling times should be near-exact
-    answerDisplay: "≈ 7 months",
+    answerDisplay: "≈ 1.8×10⁷ s (7 months)",
     src: {label:"METR — Measuring AI Ability to Complete Long Tasks", url:"https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/"},
     note: "~7 months over the full 2019–2025 window; the 2024–2025 subset is faster (~4 months / ~109 days). The 80% horizon is ~5× shorter but trends similarly."
   },
   {
     prompt: "What is the doubling time of GPU price-performance (FLOP/s per dollar), per Epoch AI's analysis of GPUs released 2006–2021?",
-    unit: "years",
-    answer: 2.5,
+    unit: "seconds",
+    answer: 78900000,
     maxOOM: 1.5,   // doubling time; should be near-exact
-    answerDisplay: "≈ 2.5 years (2.46 yr; 95% CI 2.24–2.72)",
+    answerDisplay: "≈ 7.9×10⁷ s (2.5 years; 95% CI 2.24–2.72)",
     src: {label:"Epoch AI — Trends in GPU price-performance", url:"https://epoch.ai/blog/trends-in-gpu-price-performance"},
     note: "≈ 30%/yr improvement. ML-relevant GPUs improve a bit faster (~2.1 yr); top GPUs a bit slower (~2.95 yr). Roughly Moore's-law pace."
   },
   {
     prompt: "What is the doubling time of transistor count per chip (Moore's law), per Moore's own 1975 revision?",
-    unit: "years",
-    answer: 2,
+    unit: "seconds",
+    answer: 63100000,
     maxOOM: 1.2,   // everyone knows Moore's law (~2 yr / 18 mo); strictest
-    answerDisplay: "≈ 2 years",
+    answerDisplay: "≈ 6.3×10⁷ s (2 years)",
     src: {label:"Our World in Data — Moore's Law", url:"https://ourworldindata.org/moores-law"},
     note: "Moore's 1965 paper implied ~1-year doubling; he revised it to ~2 years in 1975. The popular '18 months' is a later paraphrase (often attributed to David House)."
   },
@@ -741,11 +741,11 @@ const QUESTIONS = [
     note: "Follows from the Margolus–Levitin theorem (ops/sec ≤ 2E/πℏ) times the age of the universe. With gravitational degrees of freedom the bit count also rises to ~10¹²⁰. Often cited as the ultimate physical limit on computation. (Scoring cap is wide here, since meaningful uncertainty for a number this size is many orders of magnitude.)"
   },
   {
-    prompt: "Per Epoch AI's 'Algorithmic progress in language models' (2024), the compute needed to reach a fixed language-model performance level has halved roughly every how many months?",
-    unit: "months",
+    prompt: "Per Epoch AI's 'Algorithmic progress in language models' (2024), the compute needed to reach a fixed language-model performance level halves roughly how often (its halving time)?",
+    unit: "seconds",
     maxOOM: 1.8,
-    answer: 8,
-    answerDisplay: "≈ 8 months (95% CI 5–14)",
+    answer: 21000000,
+    answerDisplay: "≈ 2.1×10⁷ s (8 months; 95% CI 5–14)",
     src: {label:"Epoch AI — Algorithmic progress in language models", url:"https://epoch.ai/blog/algorithmic-progress-in-language-models"},
     note: "Faster than Moore's law's ~2-year doubling. For scale, the Transformer itself was worth ~2 years of this algorithmic progress; Chinchilla scaling laws ~8–16 months."
   },
@@ -778,10 +778,10 @@ const QUESTIONS = [
   },
   {
     prompt: "What is the current (2026) frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the Redwood/MATS no-CoT time-horizons paper (frontier model GPT-5.5)?",
-    unit: "minutes",
+    unit: "seconds",
     maxOOM: 3,
-    answer: 3,
-    answerDisplay: "≈ 3 minutes (GPT-5.5; reasoning-token horizon ~1,500 o3-mini tokens)",
+    answer: 180,
+    answerDisplay: "≈ 180 s (3 minutes; GPT-5.5); reasoning-token horizon ~1,500 o3-mini tokens",
     src: {label:"Woodruff, Ward et al. — Estimating No-CoT Time Horizons of Frontier AI Models (LessWrong)", url:"https://www.lesswrong.com/posts/SieLowPgNgRSPGhFw/estimating-no-cot-task-completion-time-horizons-of-frontier"},
     note: "How much a model can 'think' invisibly with no externalized CoT. It doubles only ~every 373 days (~1 yr) — about half the speed of METR's with-CoT horizons (~182-day doubling) — so most gains since GPT-4 have come from externalized reasoning. Projected ~7 min by 2028, ~25 min by 2030. A lower bound on reasoning a CoT monitor can't see."
   },
@@ -805,10 +805,10 @@ const QUESTIONS = [
   },
   {
     prompt: "Over roughly 2023–2025, what has been the approximate doubling time of Anthropic's annualized revenue?",
-    unit: "months",
+    unit: "seconds",
     maxOOM: 2,
-    answer: 4,
-    answerDisplay: "≈ 4 months (≈ 8–10× per year)",
+    answer: 10500000,
+    answerDisplay: "≈ 1.1×10⁷ s (4 months; ≈ 8–10×/yr)",
     src: {label:"Epoch AI — Anthropic vs OpenAI revenue", url:"https://epoch.ai/data-insights/anthropic-openai-revenue"},
     note: "ARR ran ~$100M (2023) → ~$1B (Dec 2024) → ~$9B (end 2025) → ~$30B+ (2026). Epoch puts it at ~10×/yr since $1B (≈3.6-month doubling); a touch slower (~7×/yr) since mid-2025."
   },
