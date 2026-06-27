@@ -62,7 +62,7 @@
         <div>
           <label for="numq">Number of questions</label><br>
           <input id="numq" type="number" min="1" step="1" value="10" style="width:90px"> <span class="unit" id="numqMax"></span>
-          <div class="note">Drawn at random from the full set each game.</div>
+          <div class="note">Drawn at random each game.</div>
         </div>
         <div>
           <label for="mins">Time per question</label><br>
@@ -70,6 +70,10 @@
           <div class="note">Set to 0 for no time limit.</div>
         </div>
       </div>
+      <div class="row" style="margin-top:14px">
+        <label class="row" style="gap:8px"><input id="norepeat" type="checkbox" checked> Avoid repeats across sessions</label>
+      </div>
+      <div class="note" id="seenStatus" style="margin-top:6px"></div>
       <div class="row" style="margin-top:18px">
         <button id="startBtn">Start</button>
         <span class="pill" id="qcount"></span>
@@ -579,11 +583,11 @@ const QUESTIONS = [
     note: "Often called the most expensive single object ever built; ~$4B/yr to operate."
   },
   {
-    prompt: "In Ajeya Cotra's 2020 \"Bio Anchors\" report, the median estimate for transformative AI was roughly how many years after publication (i.e., counting from 2020)?",
-    unit: "years",
+    prompt: "In Ajeya Cotra's 2020 'Bio Anchors' report, the median estimate for transformative AI was roughly how long after publication (counting from 2020)?",
+    unit: "seconds",
     maxOOM: 2,
-    answer: 30,
-    answerDisplay: "≈ 30 years (median ~2050)",
+    answer: 9.47e8,
+    answerDisplay: "≈ 9.5×10⁸ s (30 years; median ~2050)",
     src: {label:"Epoch AI — Grokking Bio Anchors", url:"https://epoch.ai/blog/grokking-bioanchors"},
     note: "P(TAI) ≈ 8% by 2030, ~47% by 2050, ~78% by 2100. Cotra later (2022) updated her median earlier, to roughly 2040."
   },
@@ -820,17 +824,159 @@ const QUESTIONS = [
     answerDisplay: "≈ 0.01 (~1%): NVIDIA ~$4.8T ÷ ~$470T",
     src: {label:"UBS Global Wealth Report 2025 (~$471T) + NVIDIA market cap", url:"https://www.ubs.com/global/en/media/display-page-ndp/en-20250618-gwr-2025.html"},
     note: "NVIDIA became the world's most valuable company at ~$4.8–5.0T in mid-2026. It was ~0.5% of global wealth when worth ~$2.5T — the share roughly doubled as its market cap did."
+  },
+  {
+    prompt: "Per AI Impacts' discontinuous-progress investigation, the first nuclear weapons (1945) were a discontinuity equivalent to roughly how much progress at prior rates in the relative effectiveness of explosives?",
+    unit: "seconds",
+    maxOOM: 3,
+    answer: 189000000000,
+    answerDisplay: "≈ 1.9×10¹¹ s (≈ 6,000 years of progress)",
+    src: {label:"AI Impacts — Discontinuous progress in history", url:"https://aiimpacts.org/discontinuous-progress-in-history-an-update/"},
+    note: "One of the largest robust discontinuities AI Impacts found — the canonical 'sudden technological jump,' often invoked in AI-takeoff analogies."
+  },
+  {
+    prompt: "Per AI Impacts, the SS Great Eastern (1858) was a discontinuity equivalent to roughly how much progress at prior rates in ship size?",
+    unit: "seconds",
+    maxOOM: 2.5,
+    answer: 12600000000,
+    answerDisplay: "≈ 1.3×10¹⁰ s (≈ 400 years of progress)",
+    src: {label:"AI Impacts — Discontinuous progress in history", url:"https://aiimpacts.org/discontinuous-progress-in-history-an-update/"},
+    note: "Assuming the prior linear/exponential ship-size trend; under a hyperbolic fit it shrinks to ~11–13 years. It took ~40 years before a larger ship was built."
+  },
+  {
+    prompt: "Per Robin Hanson's 'growth modes' (a recurring frame in the AI-foom debate), the forager-era economy doubled roughly how often?",
+    unit: "seconds",
+    maxOOM: 2.5,
+    answer: 7890000000000,
+    answerDisplay: "≈ 7.9×10¹² s (every ~250,000 years)",
+    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
+    note: "Hanson's three modes — forager (~250,000 yr doubling), farmer (~1,000 yr), industry (~15 yr) — each roughly 100× faster than the last. He speculates a future AI mode could double in ~weeks."
+  },
+  {
+    prompt: "Per Robin Hanson's 'growth modes', the farming-era economy doubled roughly how often?",
+    unit: "seconds",
+    maxOOM: 2,
+    answer: 31600000000,
+    answerDisplay: "≈ 3.2×10¹⁰ s (every ~1,000 years)",
+    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
+    note: "The middle of Hanson's three growth modes (forager ~250,000 yr, farmer ~1,000 yr, industry ~15 yr)."
+  },
+  {
+    prompt: "Per Robin Hanson's 'growth modes', the modern industrial economy doubles roughly how often?",
+    unit: "seconds",
+    maxOOM: 1.5,
+    answer: 473000000,
+    answerDisplay: "≈ 4.7×10⁸ s (every ~15 years)",
+    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
+    note: "The current mode. Each of Hanson's modes grew ~100× faster than the last; he speculates an AI-era mode could double in ~weeks — the economic shadow of a fast takeoff."
+  },
+  {
+    prompt: "What was the approximate annual growth rate of world real GDP in 2024?",
+    unit: "%",
+    maxOOM: 1.5,
+    answer: 3,
+    answerDisplay: "≈ 3% (World Bank/IMF put it ~2.6–3.2%)",
+    src: {label:"World Bank — GDP growth (annual %)", url:"https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG"},
+    note: "Long-run world growth runs ~3%/yr — a doubling roughly every 23 years."
+  },
+  {
+    prompt: "What was the approximate annual growth rate of world GDP per capita in 2024, per the World Bank?",
+    unit: "%",
+    maxOOM: 1.5,
+    answer: 1.9,
+    answerDisplay: "≈ 1.9%",
+    src: {label:"World Bank — GDP per capita growth (annual %)", url:"https://data.worldbank.org/indicator/NY.GDP.PCAP.KD.ZG"},
+    note: "Roughly world GDP growth (~3%) minus population growth (~1.1%). At ~2%/yr, average living standards double about every 35 years."
+  },
+  {
+    prompt: "Per AI Impacts, computer chess took roughly how long to cross the human performance range — from beginner level (~800 Elo, 1957) to superhuman (surpassing the best human, ~2006)?",
+    unit: "seconds",
+    maxOOM: 2,
+    answer: 1550000000,
+    answerDisplay: "≈ 1.5×10⁹ s (≈ 49 years; beginner → superhuman)",
+    src: {label:"AI Impacts — Time for AI to cross the human range in chess", url:"https://aiimpacts.org/time-for-ai-to-cross-the-human-performance-range-in-chess/"},
+    note: "Human Elo spans ~800 (beginner) to ~2882 (best ever). After that it took only ~11+ more years to reach today's ~3600-Elo engines. The narrower median→best-human band was of course crossed faster than the full 49 years."
+  },
+  {
+    prompt: "Training from scratch by self-play, roughly how long did AlphaGo Zero take to surpass 'AlphaGo Lee' — the version that beat world champion Lee Sedol?",
+    unit: "seconds",
+    maxOOM: 3,
+    answer: 259200,
+    answerDisplay: "≈ 2.6×10⁵ s (about 3 days)",
+    src: {label:"DeepMind / Nature — Mastering the game of Go without human knowledge", url:"https://www.nature.com/articles/nature24270"},
+    note: "The curveball. Within one ~3-day training run it blew past human-amateur and then world-champion level; by ~40 days it exceeded every prior AlphaGo. Versus chess's ~49 years to cross the human range, Go was thousands of times faster — fast takeoff, in one domain, really happened."
+  },
+  {
+    prompt: "US prosecutors' 'Operation Gatekeeper' (Oct 2024–May 2025) charged the smuggling to China of roughly how many dollars' worth of export-controlled Nvidia H100/H200 GPUs?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 160e6,
+    answerDisplay: "≈ $160 million",
+    src: {label:"CNBC — $160M of Nvidia GPUs smuggled to China", url:"https://www.cnbc.com/2025/12/09/us-attorneys-office-southern-district-of-texas-prosecutors-nvidia-chips-h200-h100-smuggle-china.html"},
+    note: "Just one prosecuted ring. Broader estimates of advanced chips reaching China despite export controls run to ~$1B+ per quarter and tens-to-hundreds of thousands of GPUs, routed via Taiwan, Malaysia and others."
+  },
+  {
+    prompt: "What share of global data-centre electricity consumption was in the United States in 2024, per the IEA?",
+    unit: "%",
+    maxOOM: 1.5,
+    answer: 45,
+    answerDisplay: "≈ 45% (US); China ~25%, Europe ~15%, rest ~15%",
+    src: {label:"IEA — Energy and AI", url:"https://www.iea.org/reports/energy-and-ai/executive-summary"},
+    note: "A rough proxy for AI-compute concentration. The Middle East is a small but fast-growing slice of the 'rest' — Gulf states are building multi-gigawatt AI campuses."
+  },
+  {
+    prompt: "What share of global data-centre electricity consumption was in China in 2024, per the IEA?",
+    unit: "%",
+    maxOOM: 1.8,
+    answer: 25,
+    answerDisplay: "≈ 25% (China); US ~45%, Europe ~15%",
+    src: {label:"IEA — Energy and AI", url:"https://www.iea.org/reports/energy-and-ai/executive-summary"},
+    note: "The US and China together account for roughly 70% of global data-centre electricity."
+  },
+  {
+    prompt: "Per Epoch AI's Capabilities Index (2025–26), by how long do the best open-weight models currently lag the best closed/frontier models, on average?",
+    unit: "seconds",
+    maxOOM: 2,
+    answer: 9.2e6,
+    answerDisplay: "≈ 9×10⁶ s (≈ 3.5 months; 90% CI ~1–5 months)",
+    src: {label:"Epoch AI — Open- vs closed-weight models", url:"https://epoch.ai/data-insights/open-weights-vs-closed-weights-models"},
+    note: "The smallest gap yet measured — and most leading open-weight models are now Chinese."
+  },
+  {
+    prompt: "Per Epoch AI's Capabilities Index, by how long do the best Chinese models lag their US counterparts, on average?",
+    unit: "seconds",
+    maxOOM: 1.8,
+    answer: 1.84e7,
+    answerDisplay: "≈ 1.8×10⁷ s (≈ 7 months; range ~4–14 months)",
+    src: {label:"Epoch AI Capabilities Index (via Trending Topics)", url:"https://www.trendingtopics.eu/us-ai-models-lead-china-by-7-months-no-chinese-ai-has-yet-matched-openais-o3/"},
+    note: "Mirrors the open-vs-closed gap, since nearly all top Chinese models are open-weight. As of mid-2026 no Chinese model had matched OpenAI's o3."
   }
 ];
 
 /* ---------------- State + DOM ---------------- */
 const $ = id => document.getElementById(id);
 let order = [], idx = 0, results = [], total = 0, timeLimit = 120, tHandle = null, remaining = 0, answered = false;
+const YEAR_EPOCH = 2025;            // calendar-year questions are scored as "years from ~now"
+const SEEN_KEY = "aifermi_seen_v1"; // localStorage: which questions you've already played
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function qid(q){ let s=q.prompt,x=0; for(let i=0;i<s.length;i++){x=(x*31+s.charCodeAt(i))|0;} return (x>>>0).toString(36); }
+function getSeen(){ try{ return new Set(JSON.parse(localStorage.getItem(SEEN_KEY)||"[]")); }catch(e){ return new Set(); } }
+function saveSeen(set){ try{ localStorage.setItem(SEEN_KEY, JSON.stringify([...set])); }catch(e){} }
+function markSeen(q){ if(!$("norepeat").checked) return; const set=getSeen(); set.add(qid(q)); saveSeen(set); }
+function updateSeenStatus(){
+  const el=$("seenStatus"); if(!el) return;
+  if(!$("norepeat").checked){ el.textContent="Repeats allowed — every game draws from the full set."; return; }
+  const set=getSeen(); const c=QUESTIONS.filter(q=>set.has(qid(q))).length;
+  el.innerHTML = "Seen "+c+" of "+QUESTIONS.length+" across past sessions. <a href=\"#\" id=\"resetSeen\">reset</a>";
+  const r=$("resetSeen"); if(r){ r.onclick=function(e){ e.preventDefault(); saveSeen(new Set()); updateSeenStatus(); }; }
+}
 
 $("qcount").textContent = QUESTIONS.length + " in the set";
 $("numqMax").textContent = "of " + QUESTIONS.length;
 $("numq").max = QUESTIONS.length;
 $("numq").value = Math.min(10, QUESTIONS.length);
+$("norepeat").onchange = updateSeenStatus;
+updateSeenStatus();
 
 function updateRunningAvg(){
   $("runningAvg").textContent = results.length ? (total/results.length).toFixed(2) : "—";
@@ -852,12 +998,17 @@ function fmtClock(s){
 /* ---------------- Flow ---------------- */
 $("startBtn").onclick = () => {
   timeLimit = Math.max(0, parseFloat($("mins").value)||0) * 60;
-  // always randomize the full set, then take the requested number
-  order = QUESTIONS.map((_,i)=>i);
-  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
   let n = Math.round(parseFloat($("numq").value) || QUESTIONS.length);
   n = Math.max(1, Math.min(QUESTIONS.length, n));
-  order = order.slice(0, n);
+  let idxs = QUESTIONS.map((_,i)=>i);
+  if($("norepeat").checked){
+    const seen = getSeen();
+    let unseen = idxs.filter(i=> !seen.has(qid(QUESTIONS[i])));
+    if(unseen.length === 0){ saveSeen(new Set()); unseen = idxs.slice(); } // full cycle done -> reset pool
+    order = shuffle(unseen).slice(0, n);   // no repeats within a cycle; a short final batch is fine
+  } else {
+    order = shuffle(idxs).slice(0, n);
+  }
   idx = 0; results = []; total = 0;
   updateRunningAvg();
   loadQuestion();
@@ -866,6 +1017,7 @@ $("startBtn").onclick = () => {
 function loadQuestion(){
   answered = false;
   const q = QUESTIONS[order[idx]];
+  markSeen(q);
   $("progress").textContent = `Q ${idx+1} of ${order.length}`;
   $("prompt").textContent = q.prompt;
   $("unit").textContent = q.unit || "";
@@ -906,22 +1058,31 @@ function grade(timedOut){
   const guess = parseNumber(raw);
   const valid = isFinite(guess) && guess > 0;
   const cap = q.maxOOM || DEFAULT_CAP;
-  const s = scoreFor(valid ? guess : NaN, q.answer, cap);
+  // yearMode: score calendar years as "years from now" so they aren't degenerate in log-space
+  let sg = valid ? guess : NaN, sa = q.answer;
+  if(q.yearMode){ sg = (valid ? guess : NaN) - YEAR_EPOCH; sa = q.answer - YEAR_EPOCH; }
+  const okScore = q.yearMode ? (valid && sg > 0) : valid;
+  const s = scoreFor(okScore ? sg : NaN, sa, cap);
   total += s;
   results.push({q, raw, guess: valid?guess:null, score:s});
   updateRunningAvg();
 
   // reveal
-  const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
-  const dist = valid ? Math.abs(Math.log(guess)-Math.log(q.answer)) : null;
+  const dist = okScore ? Math.abs(Math.log(sg)-Math.log(sa)) : null;
   $("rTitle").textContent = timedOut ? "Time's up" : "Result";
   $("rScore").textContent = s.toFixed(2);
   $("rScore").style.color = s>=0.66?"var(--good)":s>=0.33?"var(--mid)":"var(--bad)";
   $("rBar").style.width = (s*100).toFixed(0)+"%";
-  $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
   $("rTrue").textContent = q.answerDisplay;
-  $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
-  $("rDist").textContent = (valid ? dist.toFixed(2) : "—") + " / cap " + cap;
+  if(q.yearMode){
+    $("rYour").textContent = valid ? String(Math.round(guess)) : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
+    $("rFactor").textContent = valid ? Math.abs(Math.round(guess)-q.answer)+" yr off" : "—";
+  } else {
+    const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
+    $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
+    $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
+  }
+  $("rDist").textContent = (okScore ? dist.toFixed(2) : "—") + " / cap " + cap;
   $("rNote").textContent = q.note || "";
   $("rSrc").textContent = q.src.label;
   $("rSrc").href = q.src.url;
@@ -958,7 +1119,7 @@ function showEnd(){
   show("end");
 }
 
-$("restartBtn").onclick = () => show("start");
+$("restartBtn").onclick = () => { updateSeenStatus(); show("start"); };
 </script>
 </body>
 </html>
