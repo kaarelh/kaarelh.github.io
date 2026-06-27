@@ -489,13 +489,13 @@ const QUESTIONS = [
     note: "Roughly 25M military + 52M civilian (including ~20M from war-related famine and disease). The USSR and China lost the most."
   },
   {
-    prompt: "What is a common estimate of the total direct economic cost of World War II, in then-year US dollars?",
+    prompt: "What is a common estimate of the total direct economic cost of World War II, in present-day (inflation-adjusted) US dollars?",
     unit: "USD",
     maxOOM: 6,
-    answer: 1.6e12,
-    answerDisplay: "≈ $1.6 trillion (then-year dollars)",
-    src: {label:"Britannica — World War II, Costs of the war", url:"https://www.britannica.com/event/World-War-II/Costs-of-the-war"},
-    note: "Estimates vary enormously (often quoted as >$1 trillion then-dollars, several trillion adjusted) given the scale of destroyed economies."
+    answer: 6e13,
+    answerDisplay: "≈ $60 trillion (today's dollars; estimates ~$30–70T)",
+    src: {label:"WarCosts — How Much Did WW2 Cost?", url:"https://www.warcosts.org/how-much-did-ww2-cost"},
+    note: "Hugely uncertain: then-year totals themselves range ~$1.6T–$5T depending on what is counted, giving ~$30–70 trillion once adjusted for inflation. The US share alone was ~$4T in 2024 dollars."
   },
   {
     prompt: "Approximately how many nuclear warheads existed worldwide (total inventory) as of early 2025, per SIPRI?",
@@ -669,7 +669,7 @@ const QUESTIONS = [
     note: "In GB200 NVL72 racks, ~2.5e15 BF16 FLOP/s per 2-die package, ~1.1e21 FLOP/s total."
   },
   {
-    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', the 2026 Abilene (Stargate) site will have enough compute to pretrain a model of roughly how many BF16 FLOP?",
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', the 2026 Abilene (Stargate) site will have enough compute for a pretraining run of roughly how big, in BF16 FLOP?",
     unit: "FLOP",
     maxOOM: 3.5,
     answer: 4e27,
@@ -687,7 +687,7 @@ const QUESTIONS = [
     note: "Extrapolating ~2.35×/yr cost growth. The on-trend 2030 figure (~$770bn) is likely infeasible without a transformative AI payoff first."
   },
   {
-    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', a $140bn 2028 training system could pretrain a model of roughly how many BF16 FLOP?",
+    prompt: "Per Vladimir Nesov's post 'Slowdown After 2028', a $140bn 2028 training system will have enough compute for a pretraining run of roughly how big, in BF16 FLOP?",
     unit: "FLOP",
     maxOOM: 3.5,
     answer: 5e28,
@@ -732,13 +732,13 @@ const QUESTIONS = [
     note: "Deliberately conservative. MIRI notes that reaching the 10²⁴ FLOP Strict Threshold with just 16 H100s would take ~730 days, so such a run would likely be detectable."
   },
   {
-    prompt: "Per Seth Lloyd's 'Computational Capacity of the Universe' (2002), at most how many elementary logical operations could the observable universe have performed over its entire history?",
+    prompt: "Roughly how many elementary logical operations could ever be performed in our universe in total — its ultimate computational capacity?",
     unit: "operations",
     maxOOM: 10,
     answer: 1e120,
-    answerDisplay: "≈ 10¹²⁰ operations (on ~10⁹⁰ bits)",
+    answerDisplay: "≈ 10¹²⁰ operations (estimates range ~10¹²⁰–10¹²²)",
     src: {label:"Seth Lloyd — Computational Capacity of the Universe (PRL 2002)", url:"https://arxiv.org/abs/quant-ph/0110141"},
-    note: "Follows from the Margolus–Levitin theorem (ops/sec ≤ 2E/πℏ) times the age of the universe. With gravitational degrees of freedom the bit count also rises to ~10¹²⁰. Often cited as the ultimate physical limit on computation. (Scoring cap is wide here, since meaningful uncertainty for a number this size is many orders of magnitude.)"
+    note: "Seth Lloyd's ~10¹²⁰ counts operations the universe could have performed up to now (Margolus–Levitin rate × its age). Its future is finite too, bounded by the cosmological (de Sitter) event-horizon entropy, ~10¹²². So whether you count past-to-date, the free-energy-limited future, or the horizon bound, the ultimate capacity is ~10¹²⁰–10¹²² ops — astronomically beyond any conceivable AI training run, so physics is not the binding constraint."
   },
   {
     prompt: "Per Epoch AI's 'Algorithmic progress in language models' (2024), the compute needed to reach a fixed language-model performance level halves roughly how often (its halving time)?",
