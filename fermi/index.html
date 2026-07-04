@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI Fermi Estimation Game</title>
+<title>Know Your AI Numbers</title>
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --panel2:#1f2430; --ink:#e8eaed; --muted:#9aa3b2;
@@ -55,8 +55,8 @@
 
   <!-- START -->
   <section id="start">
-    <h1>AI Fermi Estimation</h1>
-    <p class="sub">Estimate each quantity. Scored by distance in natural-log space, mapped to 0–1.</p>
+    <h1>Know Your AI Numbers</h1>
+    <p class="sub">Guess each quantity as closely as you can — scored by distance in natural-log space, mapped to 0–1.</p>
     <div class="card">
       <div class="row spread">
         <div>
@@ -100,14 +100,13 @@
     <div class="card">
       <div class="prompt" id="prompt"></div>
       <div class="row">
-        <input id="answer" class="answer" type="text" inputmode="decimal"
-               placeholder="e.g. 1.76e12" autocomplete="off">
+        <input id="answer" class="answer" type="text" inputmode="text"
+               placeholder="e.g. 1.76e12, 2.5T, $40M, 45%" autocomplete="off">
         <span class="unit" id="unit"></span>
       </div>
-      <div class="note">Accepts plain numbers, scientific notation (<code>4e5</code>), or <code>1.76×10^12</code>.</div>
+      <div class="note">Accepts plain numbers, scientific notation (<code>4e5</code>), <code>1.76×10^12</code>, suffixes <code>K/M/B/T</code>, and <code>$</code>/<code>%</code> (so <code>45%</code> = 0.45).</div>
       <div class="row" style="margin-top:18px">
         <button id="submitBtn">Submit</button>
-        <button id="skipBtn" class="ghost">Skip</button>
         <button id="finishBtn" class="ghost" style="margin-left:auto">End game</button>
       </div>
     </div>
@@ -184,11 +183,17 @@ function parseNumber(raw){
   if(raw == null) return NaN;
   let s = String(raw).trim().toLowerCase();
   if(s === '') return NaN;
-  s = s.replace(/,/g,'').replace(/\s+/g,'');
+  s = s.replace(/^(about|approx(imately)?|around|roughly|~|≈|=)+/,''); // leading hedges
+  s = s.replace(/[\s,_$€£]/g,'');     // spaces, commas, underscores, currency
+  let pct = /%$/.test(s); s = s.replace(/%$/,''); // trailing % -> fraction (45% = 0.45)
+  s = s.replace(/(thousand|k)$/,'e3');
+  s = s.replace(/(trillion|tn|t)$/,'e12');
+  s = s.replace(/(billion|bn|b)$/,'e9');
+  s = s.replace(/(million|mn|m)$/,'e6');
   s = s.replace(/[x×·*]10\^?/g,'e');  // 1.76x10^12 -> 1.76e12
   s = s.replace(/^10\^/,'1e');        // 10^12 -> 1e12
   s = s.replace(/e\+/,'e');           // 1e+12 -> 1e12
-  return Number(s);
+  return pct ? Number(s)/100 : Number(s);
 }
 
 /* ---------------- Questions ----------------
@@ -269,7 +274,7 @@ const QUESTIONS = [
   },
   {
     prompt: "Take 2024 world primary energy production and divide it by the total solar power intercepted by Earth (the disc the planet presents to the Sun, before any atmospheric absorption/reflection). What is the ratio?",
-    unit: "(dimensionless)",
+    unit: "(fraction)",
     answer: 1.08e-4,
     maxOOM: 6,     // multi-step compute over obscure magnitudes; most lenient
     answerDisplay: "≈ 1.1×10⁻⁴",
@@ -359,28 +364,28 @@ const QUESTIONS = [
   },
   {
     prompt: "What share of total U.S. electricity did data centers consume in 2023, per the Lawrence Berkeley National Laboratory report?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 3,
-    answer: 4.4,
-    answerDisplay: "≈ 4.4% (176 TWh)",
+    answer: 0.044,
+    answerDisplay: "≈ 0.044 (4.4% of US electricity; 176 TWh)",
     src: {label:"LBNL — 2024 U.S. Data Center Energy Usage Report", url:"https://eta.lbl.gov/publications/2024-lbnl-data-center-energy-usage-report"},
     note: "Up from ~1.9% (58 TWh) in 2014; projected to reach 6.7–12% by 2028."
   },
   {
     prompt: "What was GPT-4's 5-shot accuracy on the MMLU benchmark, per the GPT-4 Technical Report?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.5,
-    answer: 86.4,
-    answerDisplay: "86.4%",
+    answer: 0.864,
+    answerDisplay: "0.864 (86.4%)",
     src: {label:"OpenAI — GPT-4 Technical Report", url:"https://arxiv.org/abs/2303.08774"},
     note: "vs ~70% for GPT-3.5. MMLU is a 57-subject multiple-choice exam."
   },
   {
     prompt: "What did OpenAI's o3 score on the ARC-AGI-1 semi-private eval in the public-leaderboard-eligible (low-compute) configuration, per ARC Prize (Dec 2024)?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.8,
-    answer: 75.7,
-    answerDisplay: "75.7% (87.5% in a high-compute config)",
+    answer: 0.757,
+    answerDisplay: "0.757 (75.7%; 0.875 in a high-compute config)",
     src: {label:"ARC Prize — o3 breakthrough", url:"https://arcprize.org/blog/oai-o3-pub-breakthrough"},
     note: "GPT-4o scored ~5% on the same eval in 2024. The 87.5% run used ~172× more compute and wasn't leaderboard-eligible."
   },
@@ -394,11 +399,11 @@ const QUESTIONS = [
     note: "Trained on >16,000 H100 GPUs; a dense (non-MoE) decoder-only transformer."
   },
   {
-    prompt: "Under the EU AI Act, the maximum fine for using a prohibited AI system is the greater of €35M or what percentage of a company's total worldwide annual turnover?",
-    unit: "%",
+    prompt: "Under the EU AI Act, the maximum fine for using a prohibited AI system is the greater of €35M or what fraction of a company's total worldwide annual turnover?",
+    unit: "(fraction)",
     maxOOM: 2.5,
-    answer: 7,
-    answerDisplay: "7% of global annual turnover",
+    answer: 0.07,
+    answerDisplay: "0.07 (7% of global annual turnover)",
     src: {label:"EU AI Act — Article 99 (Penalties)", url:"https://artificialintelligenceact.eu/article/99/"},
     note: "Higher than GDPR's 4% ceiling. Lower tiers apply elsewhere (≤3% for most obligations, ≤1% for supplying incorrect information)."
   },
@@ -444,7 +449,7 @@ const QUESTIONS = [
     maxOOM: 3,
     answer: 800e6,
     answerDisplay: "≈ 800 million weekly active users",
-    src: {label:"Nerdynav (reporting OpenAI figures)", url:"https://nerdynav.com/chatgpt-statistics/"},
+    src: {label:"TechCrunch — Altman: ChatGPT hits 800M weekly users", url:"https://techcrunch.com/2025/10/06/sam-altman-says-chatgpt-has-hit-800m-weekly-active-users/"},
     note: "Up from ~300M in late 2024; reportedly crossed ~900M by early 2026."
   },
   {
@@ -872,19 +877,19 @@ const QUESTIONS = [
   },
   {
     prompt: "What was the approximate annual growth rate of world real GDP in 2024?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.5,
-    answer: 3,
-    answerDisplay: "≈ 3% (World Bank/IMF put it ~2.6–3.2%)",
+    answer: 0.03,
+    answerDisplay: "≈ 0.03 (~3%/yr; World Bank/IMF ~0.026–0.032)",
     src: {label:"World Bank — GDP growth (annual %)", url:"https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG"},
     note: "Long-run world growth runs ~3%/yr — a doubling roughly every 23 years."
   },
   {
     prompt: "What was the approximate annual growth rate of world GDP per capita in 2024, per the World Bank?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.5,
-    answer: 1.9,
-    answerDisplay: "≈ 1.9%",
+    answer: 0.019,
+    answerDisplay: "≈ 0.019 (~1.9%/yr)",
     src: {label:"World Bank — GDP per capita growth (annual %)", url:"https://data.worldbank.org/indicator/NY.GDP.PCAP.KD.ZG"},
     note: "Roughly world GDP growth (~3%) minus population growth (~1.1%). At ~2%/yr, average living standards double about every 35 years."
   },
@@ -917,19 +922,19 @@ const QUESTIONS = [
   },
   {
     prompt: "What share of global data-centre electricity consumption was in the United States in 2024, per the IEA?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.5,
-    answer: 45,
-    answerDisplay: "≈ 45% (US); China ~25%, Europe ~15%, rest ~15%",
+    answer: 0.45,
+    answerDisplay: "≈ 0.45 (45% of global DC electricity; China ~0.25, Europe ~0.15, rest ~0.15)",
     src: {label:"IEA — Energy and AI", url:"https://www.iea.org/reports/energy-and-ai/executive-summary"},
     note: "A rough proxy for AI-compute concentration. The Middle East is a small but fast-growing slice of the 'rest' — Gulf states are building multi-gigawatt AI campuses."
   },
   {
     prompt: "What share of global data-centre electricity consumption was in China in 2024, per the IEA?",
-    unit: "%",
+    unit: "(fraction)",
     maxOOM: 1.8,
-    answer: 25,
-    answerDisplay: "≈ 25% (China); US ~45%, Europe ~15%",
+    answer: 0.25,
+    answerDisplay: "≈ 0.25 (25%; US ~0.45, Europe ~0.15)",
     src: {label:"IEA — Energy and AI", url:"https://www.iea.org/reports/energy-and-ai/executive-summary"},
     note: "The US and China together account for roughly 70% of global data-centre electricity."
   },
@@ -948,15 +953,32 @@ const QUESTIONS = [
     maxOOM: 1.8,
     answer: 1.84e7,
     answerDisplay: "≈ 1.8×10⁷ s (≈ 7 months; range ~4–14 months)",
-    src: {label:"Epoch AI Capabilities Index (via Trending Topics)", url:"https://www.trendingtopics.eu/us-ai-models-lead-china-by-7-months-no-chinese-ai-has-yet-matched-openais-o3/"},
+    src: {label:"Epoch AI — Chinese models lag the US frontier by ~7 months", url:"https://epoch.ai/data-insights/us-vs-china-eci"},
     note: "Mirrors the open-vs-closed gap, since nearly all top Chinese models are open-weight. As of mid-2026 no Chinese model had matched OpenAI's o3."
+  },
+  {
+    prompt: "From Karpathy's original llm.c baseline (mid-2024) to early 2026, by roughly what factor has the modded-nanoGPT speedrun cut the wall-clock time to train a GPT-2-scale model (124M) to a fixed validation loss on 8×H100?",
+    unit: "× speedup",
+    maxOOM: 2,
+    answer: 25,
+    answerDisplay: "≈ 25× (from ~45 min to ~2 min; tokens 10B → <0.4B)",
+    src: {label:"Keller Jordan — modded-nanoGPT speedrun (GitHub)", url:"https://github.com/KellerJordan/modded-nanogpt"},
+    note: "A concrete, crowd-sourced measure of algorithmic + systems progress on a fixed task and fixed hardware. Most of the gain is fewer FLOP (better optimizer/architecture — e.g. the Muon optimizer — and data); non-FLOP tricks add only ~1.1×. Tracked/discussed on LessWrong ('Measuring the dark energy of AI progress')."
+  },
+  {
+    prompt: "Per Menlo Ventures' 'State of Generative AI in the Enterprise', roughly how much did enterprises spend on generative AI worldwide in 2025?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 37e9,
+    answerDisplay: "≈ $37 billion (up ~3.2× from ~$11.5B in 2024)",
+    src: {label:"Menlo Ventures — 2025 State of Generative AI in the Enterprise", url:"https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/"},
+    note: "One of the cleaner industry-wide figures — 'generative AI market' estimates from research firms range wildly (~$20B–$100B+ for 2025) by definition. Grew ~3.2× year-over-year. For scale, the two leading labs alone (Anthropic + OpenAI) were a combined ~$70B run-rate by mid-2026."
   }
 ];
 
 /* ---------------- State + DOM ---------------- */
 const $ = id => document.getElementById(id);
 let order = [], idx = 0, results = [], total = 0, timeLimit = 120, tHandle = null, remaining = 0, answered = false;
-const YEAR_EPOCH = 2025;            // calendar-year questions are scored as "years from ~now"
 const SEEN_KEY = "aifermi_seen_v1"; // localStorage: which questions you've already played
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function qid(q){ let s=q.prompt,x=0; for(let i=0;i<s.length;i++){x=(x*31+s.charCodeAt(i))|0;} return (x>>>0).toString(36); }
@@ -1046,7 +1068,6 @@ function startTimer(){
 
 $("answer").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); grade(false); } });
 $("submitBtn").onclick = () => grade(false);
-$("skipBtn").onclick = () => { $("answer").value=""; grade(false); };
 
 function grade(timedOut){
   if(answered) return;
@@ -1058,31 +1079,22 @@ function grade(timedOut){
   const guess = parseNumber(raw);
   const valid = isFinite(guess) && guess > 0;
   const cap = q.maxOOM || DEFAULT_CAP;
-  // yearMode: score calendar years as "years from now" so they aren't degenerate in log-space
-  let sg = valid ? guess : NaN, sa = q.answer;
-  if(q.yearMode){ sg = (valid ? guess : NaN) - YEAR_EPOCH; sa = q.answer - YEAR_EPOCH; }
-  const okScore = q.yearMode ? (valid && sg > 0) : valid;
-  const s = scoreFor(okScore ? sg : NaN, sa, cap);
+  const s = scoreFor(valid ? guess : NaN, q.answer, cap);
   total += s;
   results.push({q, raw, guess: valid?guess:null, score:s});
   updateRunningAvg();
 
   // reveal
-  const dist = okScore ? Math.abs(Math.log(sg)-Math.log(sa)) : null;
+  const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
+  const dist = valid ? Math.abs(Math.log(guess)-Math.log(q.answer)) : null;
   $("rTitle").textContent = timedOut ? "Time's up" : "Result";
   $("rScore").textContent = s.toFixed(2);
   $("rScore").style.color = s>=0.66?"var(--good)":s>=0.33?"var(--mid)":"var(--bad)";
   $("rBar").style.width = (s*100).toFixed(0)+"%";
+  $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
   $("rTrue").textContent = q.answerDisplay;
-  if(q.yearMode){
-    $("rYour").textContent = valid ? String(Math.round(guess)) : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
-    $("rFactor").textContent = valid ? Math.abs(Math.round(guess)-q.answer)+" yr off" : "—";
-  } else {
-    const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
-    $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
-    $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
-  }
-  $("rDist").textContent = (okScore ? dist.toFixed(2) : "—") + " / cap " + cap;
+  $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
+  $("rDist").textContent = (valid ? dist.toFixed(2) : "—") + " / cap " + cap;
   $("rNote").textContent = q.note || "";
   $("rSrc").textContent = q.src.label;
   $("rSrc").href = q.src.url;
