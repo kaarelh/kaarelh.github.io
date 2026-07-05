@@ -71,7 +71,7 @@
         </div>
       </div>
       <div class="row" style="margin-top:14px">
-        <label class="row" style="gap:8px"><input id="norepeat" type="checkbox" checked> Avoid repeats across sessions</label>
+        <label class="row" style="gap:8px"><input id="norepeat" type="checkbox" checked> Avoid repeating questions across sessions</label>
       </div>
       <div class="note" id="seenStatus" style="margin-top:6px"></div>
       <div class="row" style="margin-top:18px">
@@ -88,6 +88,10 @@
       looser for genuinely fuzzy quantities (obscure dollar figures, multi-step computes, cap ≈ 5–6), set so the
       expected score per question is roughly constant. Non-positive, blank, or unanswered → 0.</p>
     </details>
+    <details class="card">
+      <summary style="cursor:pointer">Show all questions &amp; answers <span class="muted">(spoilers!)</span></summary>
+      <div id="spoilerList" style="margin-top:10px;max-height:420px;overflow:auto"></div>
+    </details>
   </section>
 
   <!-- QUESTION -->
@@ -101,10 +105,10 @@
       <div class="prompt" id="prompt"></div>
       <div class="row">
         <input id="answer" class="answer" type="text" inputmode="text"
-               placeholder="e.g. 1.76e12, 2.5T, $40M, 45%" autocomplete="off">
+               placeholder="e.g. 1.76e12, 2.5T, 0.45" autocomplete="off">
         <span class="unit" id="unit"></span>
       </div>
-      <div class="note">Accepts plain numbers, scientific notation (<code>4e5</code>), <code>1.76×10^12</code>, suffixes <code>K/M/B/T</code>, and <code>$</code>/<code>%</code> (so <code>45%</code> = 0.45).</div>
+      <div class="note">Accepts plain numbers, scientific notation (<code>4e5</code>), <code>1.76×10^12</code>, and suffixes like <code>K/M/B/T</code>.</div>
       <div class="row" style="margin-top:18px">
         <button id="submitBtn">Submit</button>
         <button id="finishBtn" class="ghost" style="margin-left:auto">End game</button>
@@ -157,7 +161,7 @@
     </div>
   </section>
 
-  <p class="footer">Mostly made by Claude Opus 4.8, with curation from Kaarel.</p>
+  <p class="footer">Mostly made by Claude (Opus 4.8 and Fable), with curation from Kaarel.</p>
 </div>
 
 <script>
@@ -206,8 +210,8 @@ const QUESTIONS = [
     answer: 1.76e12,
     maxOOM: 5,   // semi-known leak; many recall "~1.8T" but confuse with active params
     answerDisplay: "≈ 1.76 trillion (1.76×10¹²)",
-    src: {label:"SemiAnalysis leak, via The Decoder", url:"https://the-decoder.com/gpt-4-architecture-datasets-costs-and-more-leaked/"},
-    note: "Never officially confirmed. The leak describes a Mixture-of-Experts model: 16 experts of ~111B params each (~1.8T total), with ~280B parameters active per token."
+    src: {label:"SemiAnalysis — GPT-4 Architecture, Infrastructure (Patel & Wong, Jul 2023)", url:"https://newsletter.semianalysis.com/p/gpt-4-architecture-infrastructure"},
+    note: "Never officially confirmed. The leak describes a Mixture-of-Experts model: 16 experts of ~111B params each (~1.8T total), with ~280B parameters active per token. The primary article is paywalled; the-decoder.com has a free summary."
   },
   {
     prompt: "What is the maximum total context (input + output tokens) per request for GPT-5 via the OpenAI API, as announced at its August 2025 launch?",
@@ -215,7 +219,7 @@ const QUESTIONS = [
     answer: 400000,
     maxOOM: 3.5,     // context windows are common knowledge; range 128k–1M
     answerDisplay: "400,000 tokens (272,000 input + 128,000 output)",
-    src: {label:"allthings.how — GPT-5 context window", url:"https://allthings.how/gpt-5-context-window-limits-and-usage-in-chatgpt-and-api/"},
+    src: {label:"OpenAI — GPT-5 model reference (API docs)", url:"https://platform.openai.com/docs/models/gpt-5"},
     note: "API caps total tokens at 400k (272k in / 128k out). The ChatGPT app exposes far less: ~8k (Free), 32k (Plus), 128k (Pro)."
   },
   {
@@ -237,13 +241,13 @@ const QUESTIONS = [
     note: "Reported around 50–59 minutes depending on the task subset; ~55 min is the headline figure."
   },
   {
-    prompt: "What was the 50%-task-completion time horizon METR estimated for the Claude \"Mythos\" preview (March 2026)?",
+    prompt: "What was the 50%-task-completion time horizon METR estimated for the early Claude \"Mythos\" preview (added to its time-horizons page May 2026)?",
     unit: "seconds",
     answer: 57600,
     maxOOM: 4,     // recent and less known; truth itself is a wide CI
-    answerDisplay: "≈ 57,600 s (16 hours; 95% CI ≈ 8.5–55 h)",
-    src: {label:"METR via OfficeChai", url:"https://officechai.com/ai/claude-mythos-shows-50-time-horizon-of-16-hours-on-metr-benchmark/"},
-    note: "METR flagged this as a lower bound — its task suite wasn't built for models this capable, so only a handful of >16 h tasks anchor the estimate."
+    answerDisplay: "≈ 57,600 s (≥16 hours; 95% CI ≈ 8.5–55 h)",
+    src: {label:"METR — Task-Completion Time Horizons of Frontier AI Models", url:"https://metr.org/time-horizons/"},
+    note: "METR flags this as a lower bound: \"measurements above 16 hrs are unreliable with our current task suite\" — only a handful of >16 h tasks anchor the estimate. For comparison, Claude Opus 4.6 and GPT-5.2 (high) cluster around 5–6 h on the same page."
   },
   {
     prompt: "What is the doubling time of frontier AI's 50% task horizon over 2019–2025, per METR?",
@@ -413,8 +417,8 @@ const QUESTIONS = [
     maxOOM: 4,
     answer: 20e9,
     answerDisplay: "≈ $20 billion/yr run-rate",
-    src: {label:"MLQ.ai (reporting)", url:"https://mlq.ai/news/openai-achieves-over-20-billion-annual-revenue-run-rate-amid-explosive-growth/"},
-    note: "Up from a ~$10B run-rate in mid-2025; reportedly reached ~$25B by early 2026."
+    src: {label:"Reuters — OpenAI CFO: annualized revenue crossed $20B in 2025", url:"https://finance.yahoo.com/news/openai-cfo-says-annualized-revenue-173519097.html"},
+    note: "Per CFO Sarah Friar (Jan 2026): >$20B annualized by end-2025, up from ~$6B in 2024, tracking compute capacity growth (0.6 → 1.9 GW). Reportedly ~$25B by February 2026."
   },
   {
     prompt: "What was Anthropic's post-money valuation in its September 2025 Series F round?",
@@ -458,8 +462,8 @@ const QUESTIONS = [
     maxOOM: 4,
     answer: 130000,
     answerDisplay: "≈ 130,000 at peak (500,000+ over the whole project)",
-    src: {label:"Wikipedia — Manhattan Project", url:"https://en.wikipedia.org/wiki/Manhattan_Project"},
-    note: "~129,000 in June 1944, mostly construction workers and plant operators (only ~1,800 military). Turnover meant 500,000+ worked on it overall."
+    src: {label:"DOE — The Manhattan Project (Fehner & Gosling, official history)", url:"https://www.energy.gov/management/articles/manhattan-project"},
+    note: "~129,000 in June 1944: ~84,500 construction workers, ~40,500 plant operators, only ~1,800 military. Turnover meant 500,000+ worked on it overall."
   },
   {
     prompt: "What did the Manhattan Project cost in total, in then-year (1945) US dollars?",
@@ -467,11 +471,11 @@ const QUESTIONS = [
     maxOOM: 4,
     answer: 2e9,
     answerDisplay: "≈ $2 billion (1945) — roughly $25–38 billion today",
-    src: {label:"Wikipedia — Manhattan Project", url:"https://en.wikipedia.org/wiki/Manhattan_Project"},
-    note: "~$2.2B by war's end. The vast majority went to building uranium/plutonium production facilities, not the bombs themselves."
+    src: {label:"Brookings — Atomic Audit: costs of the Manhattan Project", url:"https://www.brookings.edu/the-costs-of-the-manhattan-project/"},
+    note: "~$1.9B through Aug 1945, ~$2.2B through end-1945 (Brookings, Atomic Audit). The vast majority went to building uranium/plutonium production facilities, not the bombs themselves."
   },
   {
-    prompt: "What was the total cost of NASA's Apollo program in inflation-adjusted (present-day) US dollars?",
+    prompt: "What was the total cost of NASA's Apollo program in inflation-adjusted (2020) US dollars?",
     unit: "USD (2020$)",
     maxOOM: 4.5,
     answer: 260e9,
@@ -498,13 +502,13 @@ const QUESTIONS = [
     note: "Roughly 25M military + 52M civilian (including ~20M from war-related famine and disease). The USSR and China lost the most."
   },
   {
-    prompt: "What is a common estimate of the total direct economic cost of World War II, in present-day (inflation-adjusted) US dollars?",
-    unit: "USD",
-    maxOOM: 6,
-    answer: 6e13,
-    answerDisplay: "≈ $60 trillion (today's dollars; estimates ~$30–70T)",
-    src: {label:"WarCosts — How Much Did WW2 Cost?", url:"https://www.warcosts.org/how-much-did-ww2-cost"},
-    note: "Hugely uncertain: then-year totals themselves range ~$1.6T–$5T depending on what is counted, giving ~$30–70 trillion once adjusted for inflation. The US share alone was ~$4T in 2024 dollars."
+    prompt: "How much did the United States spend to fight World War II (military costs), in inflation-adjusted dollars, per the Congressional Research Service?",
+    unit: "USD (2011$)",
+    maxOOM: 4,
+    answer: 4.1e12,
+    answerDisplay: "≈ $4.1 trillion (FY2011 dollars; ~$296 billion then-year)",
+    src: {label:"CRS — Costs of Major U.S. Wars (RS22926)", url:"https://www.everycrsreport.com/reports/RS22926.html"},
+    note: "War spending peaked at ~36% of US GDP (1945) — by far the costliest US war (Vietnam and Iraq each ran ~$0.7–0.8T in the same terms). Global direct-cost estimates across all belligerents are far fuzzier: commonly ~$30–70 trillion in today's dollars."
   },
   {
     prompt: "Approximately how many nuclear warheads existed worldwide (total inventory) as of early 2025, per SIPRI?",
@@ -579,13 +583,13 @@ const QUESTIONS = [
     note: "~86 billion neurons × ~1,000 synapses each. This is sometimes compared to AI parameter counts; one could hypothesize that we will get to AGI at around this many parameters."
   },
   {
-    prompt: "What is the commonly cited total cost to develop and build the International Space Station (all partners)?",
-    unit: "USD",
+    prompt: "Per ESA, what has the International Space Station cost in total — development, assembly, and ten years of operations, across all partners?",
+    unit: "EUR",
     maxOOM: 3.5,
-    answer: 150e9,
-    answerDisplay: "≈ $150 billion",
-    src: {label:"Wikipedia — International Space Station programme", url:"https://en.wikipedia.org/wiki/International_Space_Station_programme"},
-    note: "Often called the most expensive single object ever built; ~$4B/yr to operate."
+    answer: 100e9,
+    answerDisplay: "≈ €100 billion",
+    src: {label:"ESA — ISS: How much does it cost?", url:"https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/International_Space_Station/How_much_does_it_cost"},
+    note: "Often called the most expensive single object ever built. Independent tallies that include the 36 shuttle assembly flights put it near $150B (2010 est.); NASA alone spends ~$3–4B/yr operating it."
   },
   {
     prompt: "In Ajeya Cotra's 2020 'Bio Anchors' report, the median estimate for transformative AI was roughly how long after publication (counting from 2020)?",
@@ -651,7 +655,7 @@ const QUESTIONS = [
     note: "Vastly beyond the best humans. The final ASI milestone is estimated at roughly 2,000×."
   },
   {
-    prompt: "In a 2025 post, roughly what multiplier did Ryan Greenblatt estimate AI tools are currently speeding up AI R&D by?",
+    prompt: "In a 2025 post, roughly what multiplier did Ryan Greenblatt estimate AI tools were speeding up AI R&D by?",
     unit: "× speedup",
     maxOOM: 1.5,
     answer: 1.5,
@@ -786,7 +790,7 @@ const QUESTIONS = [
     note: "A rough proxy for the size of the active ML research community; submissions have grown roughly 10× over the past decade."
   },
   {
-    prompt: "What is the current (2026) frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the Redwood/MATS no-CoT time-horizons paper (frontier model GPT-5.5)?",
+    prompt: "In 2026, what was the frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the Redwood/MATS no-CoT time-horizons paper (frontier model GPT-5.5)?",
     unit: "seconds",
     maxOOM: 3,
     answer: 180,
@@ -800,8 +804,8 @@ const QUESTIONS = [
     maxOOM: 3.5,
     answer: 5e12,
     answerDisplay: "≈ 5×10¹² tokens (~40M books × ~90k words × ~1.3 tok/word)",
-    src: {label:"Wikipedia — Google Books (40M scanned; ~130M ever published)", url:"https://en.wikipedia.org/wiki/Google_Books"},
-    note: "Implies all ~130M books ever published hold only ~1.5×10¹³ tokens — about one frontier pretraining run (Llama 3 used ~15T tokens). The whole written-book heritage of humanity ≈ a single training set."
+    src: {label:"Google — 15 years of Google Books (40M+ books scanned)", url:"https://blog.google/products-and-platforms/products/search/15-years-google-books/"},
+    note: "The ~130M total is Google's own 2010 count of distinct books (129,864,880). Implies all books ever published hold only ~1.5×10¹³ tokens — about one frontier pretraining run (Llama 3 used ~15T tokens). The whole written-book heritage of humanity ≈ a single training set."
   },
   {
     prompt: "Roughly how many words does a typical human hear and read over an entire lifetime?",
@@ -849,31 +853,13 @@ const QUESTIONS = [
     note: "Assuming the prior linear/exponential ship-size trend; under a hyperbolic fit it shrinks to ~11–13 years. It took ~40 years before a larger ship was built."
   },
   {
-    prompt: "Per Robin Hanson's 'growth modes' (a recurring frame in the AI-foom debate), the forager-era economy doubled roughly how often?",
-    unit: "seconds",
-    maxOOM: 2.5,
-    answer: 7890000000000,
-    answerDisplay: "≈ 7.9×10¹² s (every ~250,000 years)",
-    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
-    note: "Hanson's three modes — forager (~250,000 yr doubling), farmer (~1,000 yr), industry (~15 yr) — each roughly 100× faster than the last. He speculates a future AI mode could double in ~weeks."
-  },
-  {
-    prompt: "Per Robin Hanson's 'growth modes', the farming-era economy doubled roughly how often?",
+    prompt: "At early-2020s world growth rates, the world economy doubles roughly how often?",
     unit: "seconds",
     maxOOM: 2,
-    answer: 31600000000,
-    answerDisplay: "≈ 3.2×10¹⁰ s (every ~1,000 years)",
-    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
-    note: "The middle of Hanson's three growth modes (forager ~250,000 yr, farmer ~1,000 yr, industry ~15 yr)."
-  },
-  {
-    prompt: "Per Robin Hanson's 'growth modes', the modern industrial economy doubles roughly how often?",
-    unit: "seconds",
-    maxOOM: 1.5,
-    answer: 473000000,
-    answerDisplay: "≈ 4.7×10⁸ s (every ~15 years)",
-    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
-    note: "The current mode. Each of Hanson's modes grew ~100× faster than the last; he speculates an AI-era mode could double in ~weeks — the economic shadow of a fast takeoff."
+    answer: 7.3e8,
+    answerDisplay: "≈ 7.3×10⁸ s (~23 years, at ~3%/yr growth)",
+    src: {label:"World Bank — GDP growth (annual %)", url:"https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG"},
+    note: "At ~3%/yr world real-GDP growth (early 2020s). This is actually slower than Robin Hanson's fitted industrial-mode doubling (~6.3 yr) — the mid-20th-century growth surge has cooled, so the 'each era grows faster' pattern hasn't obviously continued in recent decades."
   },
   {
     prompt: "What was the approximate annual growth rate of world real GDP in 2024?",
@@ -939,7 +925,7 @@ const QUESTIONS = [
     note: "The US and China together account for roughly 70% of global data-centre electricity."
   },
   {
-    prompt: "Per Epoch AI's Capabilities Index (2025–26), by how long do the best open-weight models currently lag the best closed/frontier models, on average?",
+    prompt: "Per Epoch AI's Capabilities Index (2025–26), by how long did the best open-weight models lag the best closed/frontier models, on average?",
     unit: "seconds",
     maxOOM: 2,
     answer: 9.2e6,
@@ -948,7 +934,7 @@ const QUESTIONS = [
     note: "The smallest gap yet measured — and most leading open-weight models are now Chinese."
   },
   {
-    prompt: "Per Epoch AI's Capabilities Index, by how long do the best Chinese models lag their US counterparts, on average?",
+    prompt: "Per Epoch AI's Capabilities Index, by how long have the best Chinese models lagged the US frontier, on average, since 2023?",
     unit: "seconds",
     maxOOM: 1.8,
     answer: 1.84e7,
@@ -973,6 +959,150 @@ const QUESTIONS = [
     answerDisplay: "≈ $37 billion (up ~3.2× from ~$11.5B in 2024)",
     src: {label:"Menlo Ventures — 2025 State of Generative AI in the Enterprise", url:"https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/"},
     note: "One of the cleaner industry-wide figures — 'generative AI market' estimates from research firms range wildly (~$20B–$100B+ for 2025) by definition. Grew ~3.2× year-over-year. For scale, the two leading labs alone (Anthropic + OpenAI) were a combined ~$70B run-rate by mid-2026."
+  },
+  {
+    prompt: "Per Forethought's takeoff analysis, if a future AI matched a human's capabilities, it would be roughly how many times LESS training-efficient (needing that many times more data/compute) than human learning?",
+    unit: "×",
+    maxOOM: 4,
+    answer: 1e5,
+    answerDisplay: "≈ 100,000× (10⁵) less training-efficient than a human",
+    src: {label:"Forethought — How quick and big would a software intelligence explosion be?", url:"https://www.forethought.org/research/how-quick-and-big-would-a-software-intelligence-explosion-be"},
+    note: "Forethought's illustrative figure (for a 'GPT-6'-scale model). This 'software overhang' is headroom a software intelligence explosion could exploit: they estimate ~2–6 orders of magnitude of efficiency gains before matching human lifetime learning, and ~6–16 OOMs before effective physical limits. Compare the ~10⁹ words a human hears/reads in a lifetime vs ~10¹³ training tokens for a frontier LLM."
+  },
+  {
+    prompt: "In Robin Hanson's 'growth modes' model, the world economy grew faster in each successive era — forager, then farming, then industry. From one era to the next, the growth rate sped up by roughly what factor on average (the geometric mean of his two mode-to-mode jumps)?",
+    unit: "×",
+    maxOOM: 2,
+    answer: 190,
+    answerDisplay: "≈ 190× (geometric mean of his ~250× forager→farming and ~145× farming→industry speedups)",
+    src: {label:"Robin Hanson — Long-Term Growth as a Sequence of Exponential Modes", url:"https://hanson.gmu.edu/longgrow.html"},
+    note: "From Hanson's fitted doubling times (~224,000 → ~909 → ~6.3 years). He rounds the per-era speedup to '~100×'; the geometric mean of the two actual jumps is nearer ~190×. Extrapolating the pattern, a future AI-driven mode might double the world economy in days-to-months rather than years — the outside-view case for a growth explosion."
+  },
+  {
+    prompt: "What was world GDP in 2024, in current US dollars, per the World Bank?",
+    unit: "USD",
+    maxOOM: 1.5,   // the base anchor; an informed crowd should be close
+    answer: 111e12,
+    answerDisplay: "≈ $111 trillion (current US$)",
+    src: {label:"World Bank — GDP (current US$)", url:"https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"},
+    note: "The base anchor behind this set's 'fraction of GDP' questions: 1% of world GDP ≈ $1.1T/yr. US ≈ $29T, China ≈ $19T. In PPP terms the world total is ~$190T."
+  },
+  {
+    prompt: "Per Epoch AI's 'Will we run out of data?' (2024), what is the total effective stock of human-generated public text for LLM training (quality- and repetition-adjusted)?",
+    unit: "tokens",
+    maxOOM: 3,
+    answer: 3e14,
+    answerDisplay: "≈ 3×10¹⁴ tokens (300T; 90% CI 100T–1000T)",
+    src: {label:"Epoch AI — Will we run out of data?", url:"https://epoch.ai/publications/will-we-run-out-of-data-limits-of-llm-scaling-based-on-human-generated-data"},
+    note: "Epoch's median year for full utilization at current trends is ~2028 (range 2026–2032) — the 'data wall'. Roughly 20× a Llama-3-scale (15T-token) run, and ~60× the Google Books corpus."
+  },
+  {
+    prompt: "Per the Chinchilla scaling laws (Hoffmann et al., DeepMind 2022), compute-optimal training uses roughly how many tokens per model parameter?",
+    unit: "tokens/parameter",
+    maxOOM: 2,
+    answer: 20,
+    answerDisplay: "≈ 20 tokens per parameter",
+    src: {label:"Hoffmann et al. — Training Compute-Optimal Large Language Models", url:"https://arxiv.org/abs/2203.15556"},
+    note: "Chinchilla (70B params × 1.4T tokens) beat the 4×-larger Gopher on the same compute budget. Deployed models are now deliberately 'overtrained' far past this ratio (Llama 3 8B: ~1,900 tokens/param) to buy cheaper inference."
+  },
+  {
+    prompt: "Per Epoch AI (2025), roughly how much energy does a typical ChatGPT (GPT-4o) text query consume?",
+    unit: "J",
+    maxOOM: 4,     // the viral figure is 10x the truth; wide honest uncertainty
+    answer: 1080,
+    answerDisplay: "≈ 1.1×10³ J (0.3 Wh)",
+    src: {label:"Epoch AI — How much energy does ChatGPT use?", url:"https://epoch.ai/gradient-updates/how-much-energy-does-chatgpt-use"},
+    note: "~10× below the widely-cited '3 Wh per query, 10× a Google search' figure, which Epoch argues was an overestimate. Back-of-envelope: ~1 H100-second per query at ~1 kW. Long-context or reasoning-heavy use can be far more."
+  },
+  {
+    prompt: "Per the Stanford AI Index 2025, the price of LLM inference at GPT-3.5-level performance fell by what factor between November 2022 and October 2024?",
+    unit: "×",
+    maxOOM: 3,
+    answer: 280,
+    answerDisplay: "≈ 280× ($20 → $0.07 per million tokens)",
+    src: {label:"Stanford HAI — 2025 AI Index (R&D chapter)", url:"https://hai.stanford.edu/ai-index/2025-ai-index-report/research-and-development"},
+    note: "Epoch estimates prices for fixed performance fall 9–900×/yr depending on the task. Hardware price-performance improves ~30%/yr and energy efficiency ~40%/yr — most of the collapse is algorithms plus competition."
+  },
+  {
+    prompt: "Per AI 2027's compute forecast, roughly how many H100-equivalents of AI-relevant compute will exist globally by December 2027?",
+    unit: "H100-equivalents",
+    maxOOM: 2.5,
+    answer: 1e8,
+    answerDisplay: "≈ 100 million H100e",
+    src: {label:"AI 2027 — Compute Forecast", url:"https://ai-2027.com/research/compute-forecast"},
+    note: "Grown ~2.25×/yr from ~10M H100e in March 2025, forecast bottom-up from the chip supply chain. For scale: xAI's first Colossus cluster was 0.1M H100s."
+  },
+  {
+    prompt: "Per Epoch AI, the world's installed stock of NVIDIA AI computing capacity is currently doubling roughly how often?",
+    unit: "seconds",
+    maxOOM: 1.5,   // doubling times should be near-exact
+    answer: 1.84e7,
+    answerDisplay: "≈ 1.8×10⁷ s (7 months)",
+    src: {label:"Epoch AI — Global AI computing capacity is doubling every 7 months", url:"https://epoch.ai/data-insights/ai-chip-production"},
+    note: "≈3.3×/yr; the installed base passed ~15M H100-equivalents in 2026. Coincidentally the same ~7-month doubling as METR's task horizons — and the two compound: chips × chip-quality × algorithms."
+  },
+  {
+    prompt: "In the 2023 AI Impacts survey of 2,778 ML researchers (Grace et al.), what median probability did respondents assign to advanced AI causing 'extremely bad outcomes (e.g., human extinction)'?",
+    unit: "(fraction)",
+    maxOOM: 2.5,
+    answer: 0.05,
+    answerDisplay: "0.05 (5%; mean ~9%)",
+    src: {label:"Grace et al. — Thousands of AI Authors on the Future of AI", url:"https://arxiv.org/abs/2401.02843"},
+    note: "38% of respondents gave ≥10% and one in ten gave ≥25%. The same survey's median date for high-level machine intelligence jumped 13 years earlier than in its 2022 edition."
+  },
+  {
+    prompt: "Roughly how much are Microsoft, Alphabet, Amazon, and Meta collectively planning to spend on capital expenditure in 2026 (overwhelmingly AI infrastructure), per analyst tallies as of early 2026?",
+    unit: "USD",
+    maxOOM: 2,
+    answer: 700e9,
+    answerDisplay: "≈ $700 billion (tallies range $690–725B)",
+    src: {label:"CNBC — Tech AI spending may approach $700 billion this year", url:"https://www.cnbc.com/2026/02/06/google-microsoft-meta-amazon-ai-cash.html"},
+    note: "Up ~77% from ~$410B in 2025 and ~4.5× 2022 levels — ~0.6% of world GDP from four companies. The same reports flag the strain on their free cash flow."
+  },
+  {
+    prompt: "What total US investment did TSMC announce in March 2025 for its Arizona buildout (its expanded overall commitment)?",
+    unit: "USD",
+    maxOOM: 3,
+    answer: 165e9,
+    answerDisplay: "$165 billion",
+    src: {label:"TSMC — Expanding US investment to US$165 billion", url:"https://pr.tsmc.com/english/news/3210"},
+    note: "Six wafer fabs plus advanced-packaging and R&D facilities; the first Arizona fab entered volume production in late 2024. Later reporting discussed tripling toward ~$465B in tariff negotiations."
+  },
+  {
+    prompt: "Per Woodruff's analysis of METR data (contra Toby Ord's claim of exponentially rising agent costs), frontier models complete tasks at their 50% time horizon for roughly what fraction of the cost of the equivalent human labor?",
+    unit: "(fraction)",
+    maxOOM: 2.5,
+    answer: 0.03,
+    answerDisplay: "≈ 0.03 (~3% of human cost — with no upward trend across frontier models)",
+    src: {label:"Anders Cairns Woodruff — AI's capability improvements haven't come from it getting less affordable (LessWrong)", url:"https://www.lesswrong.com/posts/E6ELHguZFNF3Czp55/ai-s-capability-improvements-haven-t-come-from-it-getting"},
+    note: "Capping AI spend at even 1/32× human cost barely slows the horizon trend (still doubling ~every 3 months) — cost isn't a bottleneck on top of capability. Woodruff argues Ord's contrary 'hourly costs rising exponentially' finding came from a methodology that inflates costs ~9–64×."
+  },
+  {
+    prompt: "How many transistors does an NVIDIA H100 GPU contain?",
+    unit: "transistors",
+    maxOOM: 2,
+    answer: 80e9,
+    answerDisplay: "80 billion (8×10¹⁰)",
+    src: {label:"NVIDIA — Hopper architecture announcement", url:"https://nvidianews.nvidia.com/news/nvidia-announces-hopper-architecture-the-next-generation-of-accelerated-computing"},
+    note: "Built on TSMC's custom 4N process. A Moore's-law anchor: Intel's 486 (1989) had ~1.2M transistors — ×66,000 in 33 years ≈ doubling every ~2.1 years. Blackwell B200 packs ~208B across two dies."
+  },
+  {
+    prompt: "How much electricity did the United States generate in 2024 (utility-scale, net), per the EIA?",
+    unit: "J",
+    maxOOM: 2.5,
+    answer: 1.5e19,
+    answerDisplay: "≈ 1.5×10¹⁹ J (~4,100 TWh)",
+    src: {label:"EIA — Electricity in the United States", url:"https://www.eia.gov/energyexplained/electricity/electricity-in-the-us-generation-capacity-and-sales.php"},
+    note: "The denominator behind the data-center-share questions (4.4% in 2023 ≈ 180 TWh). US generation was roughly flat 2007–2020 before data centers and electrification resumed growth. World total ≈ 31,000 TWh."
+  },
+  {
+    prompt: "What is the measured HPL performance (Rmax, FP64) of El Capitan — the world's fastest classical supercomputer since late 2024 — per the TOP500 list?",
+    unit: "FLOP/s",
+    maxOOM: 2.5,
+    answer: 1.8e18,
+    answerDisplay: "≈ 1.8×10¹⁸ FLOP/s (1.742 exaFLOPS in Nov 2024; remeasured at 1.809 in Nov 2025)",
+    src: {label:"TOP500 — El Capitan retains #1 (Nov 2025 list)", url:"https://top500.org/news/el-capitan-retains-1-as-jupiter-becomes-europes-first-exascale-system-in-the-66th-top500-list/"},
+    note: "LLNL's AMD MI300A machine. Mind the precision gap to AI clusters: a single ~100k-H100 training cluster delivers ~1×10²⁰ BF16 FLOP/s — ~50× El Capitan's Rmax, though at far lower precision than FP64 Linpack."
   }
 ];
 
@@ -999,6 +1129,18 @@ $("numq").max = QUESTIONS.length;
 $("numq").value = Math.min(10, QUESTIONS.length);
 $("norepeat").onchange = updateSeenStatus;
 updateSeenStatus();
+function renderSpoilers(){
+  const box=$("spoilerList"); if(!box) return;
+  QUESTIONS.forEach((q,i)=>{
+    const item=document.createElement("div"); item.style.margin="0 0 12px";
+    const p=document.createElement("div"); p.textContent=(i+1)+". "+q.prompt;
+    const a=document.createElement("div"); a.className="muted"; a.style.fontSize=".92rem"; a.style.marginTop="2px";
+    a.textContent="\u2192 "+q.answerDisplay+"  \u00b7  ";
+    const lk=document.createElement("a"); lk.href=q.src.url; lk.target="_blank"; lk.rel="noopener noreferrer"; lk.textContent=q.src.label;
+    a.appendChild(lk); item.appendChild(p); item.appendChild(a); box.appendChild(item);
+  });
+}
+renderSpoilers();
 
 function updateRunningAvg(){
   $("runningAvg").textContent = results.length ? (total/results.length).toFixed(2) : "—";
@@ -1054,15 +1196,16 @@ function startTimer(){
   clearInterval(tHandle);
   const t = $("timer");
   if(timeLimit <= 0){ t.textContent = "∞"; t.className="timer"; return; }
-  remaining = timeLimit;
+  // Wall-clock deadline: immune to setInterval throttling in background tabs.
+  const deadline = Date.now() + timeLimit*1000;
   tick();
   tHandle = setInterval(tick, 250);
   function tick(){
     const t2 = $("timer");
+    remaining = Math.max(0, (deadline - Date.now())/1000);
     t2.textContent = fmtClock(remaining);
     t2.className = "timer" + (remaining<=10?" crit":remaining<=30?" warn":"");
-    if(remaining <= 0){ clearInterval(tHandle); grade(true); return; }
-    remaining -= 0.25;
+    if(remaining <= 0){ clearInterval(tHandle); grade(true); }
   }
 }
 
@@ -1076,7 +1219,11 @@ function grade(timedOut){
   $("submitBtn").disabled = true;
   const q = QUESTIONS[order[idx]];
   const raw = $("answer").value;
-  const guess = parseNumber(raw);
+  let guess = parseNumber(raw);
+  // On "(fraction)" questions, a bare answer > 1 (e.g. "44" meaning 44%) is
+  // near-certainly percent-intent; silently rescale. Skip if they typed "%"
+  // themselves (parseNumber already handled it — "150%" really means 1.5).
+  if((q.unit||"").startsWith("(") && isFinite(guess) && guess > 1 && !/%/.test(raw)) guess /= 100;
   const valid = isFinite(guess) && guess > 0;
   const cap = q.maxOOM || DEFAULT_CAP;
   const s = scoreFor(valid ? guess : NaN, q.answer, cap);
@@ -1093,7 +1240,7 @@ function grade(timedOut){
   $("rBar").style.width = (s*100).toFixed(0)+"%";
   $("rYour").textContent = valid ? fmt(guess) + (q.unit&&!q.unit.startsWith("(")?" "+q.unit:"") : (raw.trim()===""?"(no answer)":"(invalid: "+raw+")");
   $("rTrue").textContent = q.answerDisplay;
-  $("rFactor").textContent = valid ? "×"+fmt(factor) : "—";
+  $("rFactor").textContent = valid ? "×"+fmt(factor)+(guess>q.answer?" (too high)":guess<q.answer?" (too low)":"") : "—";
   $("rDist").textContent = (valid ? dist.toFixed(2) : "—") + " / cap " + cap;
   $("rNote").textContent = q.note || "";
   $("rSrc").textContent = q.src.label;
