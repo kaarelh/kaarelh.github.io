@@ -256,7 +256,7 @@ const QUESTIONS = [
     maxOOM: 1.5,   // famous "~7 months"; doubling times should be near-exact
     answerDisplay: "≈ 1.8×10⁷ s (7 months)",
     src: {label:"METR — Measuring AI Ability to Complete Long Tasks", url:"https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/"},
-    note: "~7 months over the full 2019–2025 window; the 2024–2025 subset is faster (~4 months / ~109 days). The 80% horizon is ~5× shorter but trends similarly."
+    note: "~7 months (212 days) over the full 2019–2025 window; the 2024–2025 subset is faster (~118 days in the paper; METR's Jan 2026 'Time Horizon 1.1' update puts the post-2024 rate at ~3–3.5 months). The 80% horizon is ~5× shorter but trends similarly."
   },
   {
     prompt: "What is the doubling time of GPU price-performance (FLOP/s per dollar), per Epoch AI's analysis of GPUs released 2006–2021?",
@@ -292,7 +292,7 @@ const QUESTIONS = [
     maxOOM: 5,     // recallable news, but $10M–$1B is a plausible spread
     answerDisplay: "≈ $125 million",
     src: {label:"CNBC — AI industry super PAC raises $125M", url:"https://www.cnbc.com/2026/01/30/ai-industry-super-pac-raises-campaign-money.html"},
-    note: "The Leading the Future super PAC itself reported ~$50.3M; the broader network (incl. nonprofit advocacy arms) totals ~$125M. Backers include a16z, Greg Brockman, Joe Lonsdale, Ron Conway."
+    note: "The network — the super PAC plus affiliated PACs and nonprofit advocacy arms — entered 2026 with ~$70M cash on hand for the midterms. Backers include a16z, Greg Brockman, Joe Lonsdale, Ron Conway, and Perplexity."
   },
   {
     prompt: "How much did Anthropic spend on U.S. federal lobbying in 2025, per OpenSecrets?",
@@ -304,7 +304,7 @@ const QUESTIONS = [
     note: "About a 4× jump year-over-year, among the fastest growth of any AI company."
   },
   {
-    prompt: "Per McKinsey, the projected capital investment in building out the global data-center value chain equals roughly what fraction of global GDP per year?",
+    prompt: "Per McKinsey, projected capital investment in the global data-center value chain over 2025–2030 equals roughly what fraction of global GDP per year?",
     unit: "(fraction)",
     answer: 0.01,
     maxOOM: 4,     // ballpark-able (0.1%–5%) but not common knowledge
@@ -763,13 +763,13 @@ const QUESTIONS = [
     note: "Faster than Moore's law's ~2-year doubling. For scale, the Transformer itself was worth ~2 years of this algorithmic progress; Chinchilla scaling laws ~8–16 months."
   },
   {
-    prompt: "Per Epoch AI's 'Algorithmic progress in computer vision' (Erdil & Besiroglu, 2022), ImageNet progress decomposes into compute, better algorithms, and data — roughly what fraction came from scaling data (the smallest of the three)?",
+    prompt: "Per Epoch AI's 'Algorithmic progress in computer vision' (Erdil & Besiroglu, 2022), Shapley decompositions of ImageNet progress from AlexNet (2012) to modern models (BiT-L, ViT-H/14) credit compute scaling, better algorithms, and data scaling. Roughly what fraction goes to scaling data (the smallest of the three)?",
     unit: "(fraction)",
     maxOOM: 1.8,
-    answer: 0.1,
-    answerDisplay: "≈ 0.10 — the Shapley split is roughly 45% compute / 45% algorithms / 10% data",
+    answer: 0.12,
+    answerDisplay: "≈ 0.12 (AlexNet→BiT-L/ViT-H/14: ~41–44% algorithms, ~44–47% compute, ~12% data)",
     src: {label:"Epoch AI / Erdil & Besiroglu — Algorithmic progress in computer vision", url:"https://arxiv.org/abs/2212.05153"},
-    note: "The clean three-way split for image classification: compute and algorithms each ~45%, data ~10% (often misremembered as ~40/40/20). For language models, Epoch's later analysis lumps compute+data together (60–95%) with algorithms only 5–40%."
+    note: "Algorithms and compute have been roughly equally important; data a distant third (its share rises to ~20–30% for later-model pairs like ResNet50→ViT). Most algorithmic progress is compute-augmenting rather than data-augmenting, by ~4–11×. For language models, Epoch's later analysis attributes 60–95% to compute+data scaling, algorithms 5–40%."
   },
   {
     prompt: "Roughly how many AI publications were produced worldwide in 2023 (all venues), per the Stanford AI Index?",
@@ -790,12 +790,12 @@ const QUESTIONS = [
     note: "A rough proxy for the size of the active ML research community; submissions have grown roughly 10× over the past decade."
   },
   {
-    prompt: "In 2026, what was the frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the Redwood/MATS no-CoT time-horizons paper (frontier model GPT-5.5)?",
+    prompt: "In 2026, what was the frontier 50% time horizon for tasks done with NO chain-of-thought (single forward pass), per the no-CoT time-horizons paper (Ward, Gould, Woodruff et al., June 2026; frontier model GPT-5.5)?",
     unit: "seconds",
     maxOOM: 3,
     answer: 180,
     answerDisplay: "≈ 180 s (3 minutes; GPT-5.5); reasoning-token horizon ~1,500 o3-mini tokens",
-    src: {label:"Woodruff, Ward et al. — Estimating No-CoT Time Horizons of Frontier AI Models (LessWrong)", url:"https://www.lesswrong.com/posts/SieLowPgNgRSPGhFw/estimating-no-cot-task-completion-time-horizons-of-frontier"},
+    src: {label:"Ward, Gould, Woodruff et al. — Estimating No-CoT Time Horizons of Frontier AI Models (LessWrong)", url:"https://www.lesswrong.com/posts/SieLowPgNgRSPGhFw/estimating-no-cot-task-completion-time-horizons-of-frontier"},
     note: "How much a model can 'think' invisibly with no externalized CoT. It doubles only ~every 373 days (~1 yr) — about half the speed of METR's with-CoT horizons (~182-day doubling) — so most gains since GPT-4 have come from externalized reasoning. Projected ~7 min by 2028, ~25 min by 2030. A lower bound on reasoning a CoT monitor can't see."
   },
   {
@@ -895,7 +895,7 @@ const QUESTIONS = [
     answer: 259200,
     answerDisplay: "≈ 2.6×10⁵ s (about 3 days)",
     src: {label:"DeepMind / Nature — Mastering the game of Go without human knowledge", url:"https://www.nature.com/articles/nature24270"},
-    note: "The curveball. Within one ~3-day training run it blew past human-amateur and then world-champion level; by ~40 days it exceeded every prior AlphaGo. Versus chess's ~49 years to cross the human range, Go was thousands of times faster — fast takeoff, in one domain, really happened."
+    note: "The curveball — but note this measures a different parameter than the chess question: as a research field, Go took ~47 years to cross the human range (Zobrist's 1968 program could just beat a beginner; AlphaGo beat professionals in 2015–16), almost identical to chess's ~49. What happened here is that a single later training run retraced the entire range from scratch — random play to beyond world champion — in days (crossing AlphaGo Lee's rating at ~36 h; the 72-h snapshot won 100–0; every prior AlphaGo surpassed by ~40 days). Once the method and compute exist, crossing the human range can take ~3 days."
   },
   {
     prompt: "US prosecutors' 'Operation Gatekeeper' (Oct 2024–May 2025) charged the smuggling to China of roughly how many dollars' worth of export-controlled Nvidia H100/H200 GPUs?",
@@ -925,13 +925,13 @@ const QUESTIONS = [
     note: "The US and China together account for roughly 70% of global data-centre electricity."
   },
   {
-    prompt: "Per Epoch AI's Capabilities Index (2025–26), by how long did the best open-weight models lag the best closed/frontier models, on average?",
+    prompt: "Per Epoch AI's Capabilities Index (early 2026), by how long do the best open-weight models lag the best closed/frontier models, on average?",
     unit: "seconds",
     maxOOM: 2,
-    answer: 9.2e6,
-    answerDisplay: "≈ 9×10⁶ s (≈ 3.5 months; 90% CI ~1–5 months)",
-    src: {label:"Epoch AI — Open- vs closed-weight models", url:"https://epoch.ai/data-insights/open-weights-vs-closed-weights-models"},
-    note: "The smallest gap yet measured — and most leading open-weight models are now Chinese."
+    answer: 1.05e7,
+    answerDisplay: "≈ 1.05×10⁷ s (≈ 4 months / 8 ECI points, since January 2026)",
+    src: {label:"Epoch AI — Open models lag closed models by 4 months (ECI)", url:"https://epoch.ai/data-insights/open-closed-eci-gap"},
+    note: "An earlier benchmark-based Epoch estimate put the gap at ~3–3.5 months. Among the smallest gaps yet measured — and most leading open-weight models are now Chinese, so this closely mirrors the US–China gap."
   },
   {
     prompt: "Per Epoch AI's Capabilities Index, by how long have the best Chinese models lagged the US frontier, on average, since 2023?",
@@ -958,7 +958,7 @@ const QUESTIONS = [
     answer: 37e9,
     answerDisplay: "≈ $37 billion (up ~3.2× from ~$11.5B in 2024)",
     src: {label:"Menlo Ventures — 2025 State of Generative AI in the Enterprise", url:"https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/"},
-    note: "One of the cleaner industry-wide figures — 'generative AI market' estimates from research firms range wildly (~$20B–$100B+ for 2025) by definition. Grew ~3.2× year-over-year. For scale, the two leading labs alone (Anthropic + OpenAI) were a combined ~$70B run-rate by mid-2026."
+    note: "One of the cleaner industry-wide figures — 'generative AI market' estimates from research firms range wildly (~$20B–$100B+ for 2025) by definition. Grew ~3.2× year-over-year. For scale, the two leading labs alone (Anthropic + OpenAI) were a combined ~$55B annualized run-rate by April 2026."
   },
   {
     prompt: "Per Forethought's takeoff analysis, if a future AI matched a human's capabilities, it would be roughly how many times LESS training-efficient (needing that many times more data/compute) than human learning?",
