@@ -655,13 +655,13 @@ const QUESTIONS = [
     note: "Vastly beyond the best humans. The final ASI milestone is estimated at roughly 2,000×."
   },
   {
-    prompt: "In a 2025 post, roughly what multiplier did Ryan Greenblatt estimate AI tools were speeding up AI R&D by?",
+    prompt: "In 'My picture of the present in AI' (April 2026), Ryan Greenblatt estimated the serial research-engineering speed-up from AI tools at OpenAI and Anthropic — the factor by which an engineer would have to be sped up to match the value of having AI tools (NOT the speed-up of overall AI progress). What was it?",
     unit: "× speedup",
     maxOOM: 1.5,
-    answer: 1.5,
-    answerDisplay: "≈ 1.5× (he's floated ~1.5–2×)",
-    src: {label:"Ryan Greenblatt (Redwood) — My picture of the present in AI", url:"https://blog.redwoodresearch.org/p/my-picture-of-the-present-in-ai"},
-    note: "He notes a 4× speedup on research tasks translates to far less overall (~1.75×), since compute also bottlenecks progress."
+    answer: 1.6,
+    answerDisplay: "≈ 1.6× (up from ~1.4× at the start of 2026)",
+    src: {label:"Ryan Greenblatt (Redwood) — My picture of the present in AI (Apr 2026)", url:"https://blog.redwoodresearch.org/p/my-picture-of-the-present-in-ai"},
+    note: "Deliberately not the naive 'how much longer would my work take without AI?' measure, which workflow adaptation inflates to ~3–20×. The speed-up to overall AI progress is much smaller — ~1.15–1.2× — since engineering is only part of the labor, labor only one input to algorithmic progress, and algorithmic progress only ~60–80% of overall AI progress."
   },
   {
     prompt: "Per Vladimir Nesov's post 'Slowdown After 2028' (May 2025), roughly how much compute (BF16 FLOP) was used to pretrain the 2024 frontier models such as Grok 3 and GPT-4.5 (on ~100K H100s)?",
@@ -799,7 +799,7 @@ const QUESTIONS = [
     note: "How much a model can 'think' invisibly with no externalized CoT. It doubles only ~every 373 days (~1 yr) — about half the speed of METR's with-CoT horizons (~182-day doubling) — so most gains since GPT-4 have come from externalized reasoning. Projected ~7 min by 2028, ~25 min by 2030. A lower bound on reasoning a CoT monitor can't see."
   },
   {
-    prompt: "Google Books has scanned ~40 million of the ~130 million books ever published (~30% of them). Roughly how many text tokens does the Google Books corpus contain?",
+    prompt: "Google Books has scanned roughly 30% of all books ever published. Roughly how many text tokens does the Google Books corpus contain?",
     unit: "tokens",
     maxOOM: 3.5,
     answer: 5e12,
