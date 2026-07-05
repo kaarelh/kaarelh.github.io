@@ -1069,13 +1069,13 @@ const QUESTIONS = [
     note: "Six wafer fabs plus advanced-packaging and R&D facilities; the first Arizona fab entered volume production in late 2024. Later reporting discussed tripling toward ~$465B in tariff negotiations."
   },
   {
-    prompt: "Per Woodruff's analysis of METR data (contra Toby Ord's claim of exponentially rising agent costs), frontier models complete tasks at their 50% time horizon for roughly what fraction of the cost of the equivalent human labor?",
+    prompt: "Per Woodruff's March 2026 analysis of METR data (contra Toby Ord's claim of exponentially rising agent costs): across frontier models from ~2023 through early 2026, the median cost ratio — inference cost of successful runs ÷ human cost for the same task, on tasks within ±0.1 OOM of each model's 50% time horizon — stayed roughly flat at what value?",
     unit: "(fraction)",
     maxOOM: 2.5,
     answer: 0.03,
-    answerDisplay: "≈ 0.03 (~3% of human cost — with no upward trend across frontier models)",
+    answerDisplay: "≈ 0.03 (~3% of human cost, with no upward trend across successive frontier models)",
     src: {label:"Anders Cairns Woodruff — AI's capability improvements haven't come from it getting less affordable (LessWrong)", url:"https://www.lesswrong.com/posts/E6ELHguZFNF3Czp55/ai-s-capability-improvements-haven-t-come-from-it-getting"},
-    note: "Capping AI spend at even 1/32× human cost barely slows the horizon trend (still doubling ~every 3 months) — cost isn't a bottleneck on top of capability. Woodruff argues Ord's contrary 'hourly costs rising exponentially' finding came from a methodology that inflates costs ~9–64×."
+    note: "The realized cost of successes at METR's standard budgets — NOT the marginal cost of pushing the horizon higher, which diverges near a model's saturation point (roughly Ord's construction; Woodruff argues it inflates hourly costs ~9–64×). Robustness: capping spend at even 1/32× human cost barely slows the horizon trend (still ~3-month doubling in post-2024 data), so cost isn't a bottleneck on top of capability."
   },
   {
     prompt: "How many transistors does an NVIDIA H100 GPU contain?",
