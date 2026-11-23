@@ -127,6 +127,7 @@
         </div>
       </div>
       <div class="bar"><i id="rBar" style="width:0%"></i></div>
+      <div id="rPrompt" style="font-size:1rem;line-height:1.45;margin:14px 0 2px;color:var(--muted)"></div>
       <dl class="reveal">
         <div class="row" style="gap:40px;align-items:flex-start">
           <div><dt>Your answer</dt><dd id="rYour">—</dd></div>
@@ -302,6 +303,15 @@ const QUESTIONS = [
     answerDisplay: "≈ $3.13 million",
     src: {label:"OpenSecrets — Anthropic lobbying profile", url:"https://www.opensecrets.org/federal-lobbying/clients/summary?cycle=2025&id=D000106114"},
     note: "About a 4× jump year-over-year, among the fastest growth of any AI company."
+  },
+  {
+    prompt: "Per Charbel-Raphaël Segerie's 'The current bottleneck is political will, not research' (July 2026), from roughly 2024 to mid-2026 the number of members of the US Congress who had publicly discussed AGI or loss-of-control risk doubled roughly how often?",
+    unit: "seconds",
+    maxOOM: 2,
+    answer: 1.45e7,
+    answerDisplay: "≈ 1.45×10⁷ s (5.5 months)",
+    src: {label:"Charbel-Raphaël Segerie — The current bottleneck is political will, not research (LessWrong)", url:"https://www.lesswrong.com/posts/EexsebbYhbe2gXkPP/the-current-bottleneck-is-political-will-not-research"},
+    note: "From a handful in early 2023 to 40 members (≈7% of Congress) by mid-2026, per the AIPN congressional-quote tracker. NB: 5.5 months describes the recent surge — at that rate, 40 back-extrapolates to a handful in early 2025, so it's roughly a ~2024–26 fit; the full 2023–26 window averages ~10–14 months per doubling. Most statements are bare awareness (his 'Level 0–1'); he counts only ~3 members actively championing existential safety, and cautions this 'law' is far less solid than METR's capability-doubling trend."
   },
   {
     prompt: "Per McKinsey, projected capital investment in the global data-center value chain over 2025–2030 equals roughly what fraction of global GDP per year?",
@@ -804,8 +814,8 @@ const QUESTIONS = [
     maxOOM: 3.5,
     answer: 5e12,
     answerDisplay: "≈ 5×10¹² tokens (~40M books × ~90k words × ~1.3 tok/word)",
-    src: {label:"Google — 15 years of Google Books (40M+ books scanned)", url:"https://blog.google/products-and-platforms/products/search/15-years-google-books/"},
-    note: "The ~130M total is Google's own 2010 count of distinct books (129,864,880). Implies all books ever published hold only ~1.5×10¹³ tokens — about one frontier pretraining run (Llama 3 used ~15T tokens). The whole written-book heritage of humanity ≈ a single training set."
+    src: {label:"Mark Cummins — How much LLM training data is there, in the limit? (Educating Silicon)", url:"https://www.educatingsilicon.com/2024/05/09/how-much-llm-training-data-is-there-in-the-limit/"},
+    note: "Cummins: 40M books (Google's 2019 '15 years' post) × ~90k words × ~1.3 tokens/word ≈ 4.8T. Empirical cross-check: DeepMind's RETRO paper directly reports the English portion as 20.5M books = 3.42×10¹² tokens (~167k tokens/book). The ~130M books-ever figure is Google's own 2010 count (129,864,880). Implies all books ever published hold only ~1.5–2×10¹³ tokens — about one frontier pretraining run (Llama 3 used ~15T tokens). The whole written-book heritage of humanity ≈ a single training set."
   },
   {
     prompt: "Roughly how many words does a typical human hear and read over an entire lifetime?",
@@ -826,7 +836,7 @@ const QUESTIONS = [
     note: "ARR ran ~$100M (2023) → ~$1B (Dec 2024) → ~$9B (end 2025) → ~$30B+ (2026). Epoch puts it at ~10×/yr since $1B (≈3.6-month doubling); a touch slower (~7×/yr) since mid-2025."
   },
   {
-    prompt: "As of mid-2026, NVIDIA's market capitalization is roughly what fraction of total global household wealth (~$470 trillion, per UBS)?",
+    prompt: "As of mid-2026, NVIDIA's market capitalization is roughly what fraction of total global household wealth (per UBS's Global Wealth Report)?",
     unit: "(fraction)",
     maxOOM: 2.5,
     answer: 0.01,
@@ -1235,6 +1245,7 @@ function grade(timedOut){
   const factor = valid ? Math.exp(Math.abs(Math.log(guess)-Math.log(q.answer))) : null;
   const dist = valid ? Math.abs(Math.log(guess)-Math.log(q.answer)) : null;
   $("rTitle").textContent = timedOut ? "Time's up" : "Result";
+  $("rPrompt").textContent = q.prompt;
   $("rScore").textContent = s.toFixed(2);
   $("rScore").style.color = s>=0.66?"var(--good)":s>=0.33?"var(--mid)":"var(--bad)";
   $("rBar").style.width = (s*100).toFixed(0)+"%";
