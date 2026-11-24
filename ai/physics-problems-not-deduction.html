@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico">
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12.1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>physics-problems-not-deduction</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+<p>My claim is that physics problems are not solved using only
+deductions from statements which are stated in the textbook — in physics
+(and any other science), our stated theories do not deductively imply
+answers to the problems humans routinely solve using the theories. A
+solution to a physics problem doesn’t look like just following valid
+formal deduction rules starting from propositional forms of some laws of
+physics. We don’t know how to specify some formal system in which
+solutions to e.g. problems in basic mechanics can be stated. One central
+issue is that “common sense” is involved in the solutions, and that
+isn’t something that the textbook (or any book) specifies
+propositionally. Common sense is pretty non-propositional — it’s a lot
+like how we know how to walk but are completely unable to usefully
+specify in words how one walks. In simple theoretical physics problems,
+this shows up in particular in solution steps that look like “viewing
+the situation described in the problem in the correct way”. In some
+cases, these could be viewed as steps that translate a problem which is
+stated vaguely (according to the standards of a mathematician) into a
+problem that is specified precisely. Here’s an example (it’s not
+cherry-picked — I looked at <a
+href="https://www.feynmanlectures.caltech.edu/info/exercises.html"
+class="uri">https://www.feynmanlectures.caltech.edu/info/exercises.html</a>
+and clicked on a random problem):</p>
+<ul>
+<li>source: <a
+href="https://www.feynmanlectures.caltech.edu/info/exercises/bug_on_band.html"
+class="uri">https://www.feynmanlectures.caltech.edu/info/exercises/bug_on_band.html</a></li>
+<li>problem statement: An infinitely stretchable rubber band has one end
+nailed to a wall, while the other end is pulled away from the wall at
+the rate of 1 m/s; initially the band is 1 meter long. A bug on the
+rubber band, initially near the wall end, is crawling toward the other
+end at the rate of 0.001 cm/s. Will the bug ever reach the other end? If
+so, when?</li>
+</ul>
+<p>It might be interesting to try to solve the problem yourself if you
+want. I’ll give my solution and talk a bit about it in the next
+message.</p>
+<p>my solution (written like a physicist would) — but feel free to
+ignore this and think about your own solution instead, if you
+prefer:</p>
+<p>Let’s say that at time t, the bug is at a fraction f(t) along the
+band. The length of the band is l+tu, where l is the length of the band
+and u is the speed with which the band is stretched. Letting the bug’s
+speed be v, we have df/dt = v/(l+tu), so df = v dt/(l+tu). Integrating
+from 0 to f, we get f = int_0^t v ds/(l+su) = v/u int_{l/u}^{t+l/u} dw/w
+= v/u log(tu/l+1). The bug reaches the end when 1 = f = v/u log(tu/l+1).
+Solving for t and plugging in numbers gives t = e^{100000} - 1.</p>
+<p>There are weird steps here which are left pretty implicit. Like,
+imagine what some sort of formal argument checker would think about this
+argument. How would we try to formalize it so that it would actually be
+deductively valid? For this problem, we could maybe try to separate a
+solution into two stages as follows:</p>
+<p>stage 1: Setting up a precise mathematical problem (this is pretty
+much entirely left implicit in the solution above). This might involve
+saying the bug “is” a point, saying the rubber band is an expanding
+interval on the real line, saying the band being nailed to a wall means
+one end of the interval is fixed and the other end being pulled away at
+1 m/s means the other end of the interval is moving at 1 m/s, saying
+precisely what it means for the point-bug to walk at some speed along
+the band while the band is expanding (precisely what model to pick for
+this mathematically could require eg imagining a “two-legged bug”
+standing on a point of the band (which is moving because the band is
+being stretched) with one leg and taking a little step onto another
+point with its other leg and realizing that the stretching that happens
+in the band between those two points during the small step is a
+higher-order term that can be ignored — we see here that we might
+require an auxiliary model to set up the main model). This is not
+intended as an exhaustive list. I think it’s very tricky to imagine a
+formal system supporting this (often unstated) part of the solution. To
+the extent that we are using deductions from some “laws”, these are not
+laws that have been stated in any physics textbook (or any other
+textbook). One issue one runs into is that there are sometimes
+assumptions which are fine in one context, but not in another — in one
+context, we can say the rubber band is an interval, but in another
+context, it might be curved; in one context, we can think of a point
+bug, but in another, we might need to think of the bug as being an
+extended object (indeed, we already did that above when understanding
+how to formalize the movement of the bug). If we want to make the
+know-how that goes into this part of the solution propositionally
+described, we might need some meta-laws about which kinds of statements
+are fine to introduce in what context, or something? I expect getting
+something to work here to be very hard; I think creating some formal
+system which actually works here would plausibly be one of the coolest
+things of all time in the philosophy of language/science, and it might
+well just be impossible (because it’s not the sort of thing that can be
+captured in such a system, maybe).</p>
+<p>stage 2: Solving the mathematical problem. This part can indeed be
+done deductively from the axioms of ZFC or whatever, assuming we were
+careful on the previous step.</p>
+<p>I think one could have the instinct to say that step 1 was only
+necessary because the problem wasn’t “presented properly”/[stated
+clearly], but well, problems in science simply aren’t “presented
+properly” — science is all about solving problems which aren’t presented
+properly (that’s, like, what makes it not math). Yes, math shows up in
+science, but most work in science does not look like solving clear
+problems.</p>
+<p>I think solutions only become even less like solutions to
+mathematical problems as one leaves the realm of crisp quick problems
+presented in a textbook, moving closer to research. For example, I think
+the decomposition of a solution into a step of setting up a mathematical
+framing of the problem and a step of solving the mathematically framed
+problem becomes less tenable for harder problems, where you instead get
+into some much weirder dance with many framings/models (we already saw a
+little of this above), with it being really hard to construct some
+unified clear picture in which all of them sit. I think it’s likely
+various other/further weird things will show up as well if one tries to
+repeat the above exercise with other problems. One could e.g. look at
+problem 2 here (it requires familiarity with thermodynamics): <a
+href="https://eupho.ee/wp-content/uploads/2020/07/EuPhO17_theory.pdf"
+class="uri">https://eupho.ee/wp-content/uploads/2020/07/EuPhO17_theory.pdf</a>
+(solution: <a
+href="https://eupho.ee/wp-content/uploads/2020/07/EuPhO17_theory_solution_marking.pdf"
+class="uri">https://eupho.ee/wp-content/uploads/2020/07/EuPhO17_theory_solution_marking.pdf</a>
+). But let me just stop here for now.</p>
+</body>
+</html>
